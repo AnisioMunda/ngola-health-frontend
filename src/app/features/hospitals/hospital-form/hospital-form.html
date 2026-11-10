@@ -118,6 +118,14 @@
       }
 
       <div class="form-actions">
+        @if (original(); as h) {
+          <a
+            class="btn btn-link history"
+            routerLink="/audit"
+            [queryParams]="{ entityType: 'HOSPITAL', entityId: h.id }"
+            >Ver histórico</a
+          >
+        }
         <a class="btn btn-secondary" routerLink="/hospitals">Cancelar</a>
         <button class="btn btn-primary" type="submit" [disabled]="saving()">
           {{ saving() ? 'A guardar…' : isEdit() ? 'Guardar alterações' : 'Registar hospital' }}

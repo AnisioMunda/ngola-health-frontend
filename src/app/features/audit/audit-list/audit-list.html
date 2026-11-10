@@ -1,0 +1,218 @@
+<section class="page wide">
+  <header class="page-header">
+    <div>
+      <h1>Auditoria</h1>
+      <p class="muted">
+        Registo das acções realizadas{{ isSuperAdmin() ? ' na plataforma' : ' neste hospital' }}. Os
+        eventos não podem ser alterados nem apagados.
+      </p>
+    </div>
+  </header>
+
+  <form class="filters card" role="search" (ngSubmit)="applyFilters()">
+    <label class="field grow">
+      <span>Pesquisar</span>
+      <input
+        type="search"
+        name="search"
+        [(ngModel)]="filters.search"
+        placeholder="Resumo ou autor"
+      />
+    </label>
+    <label class="field">
+      <span>Acção</span>
+      <select name="action" [(ngModel)]="filters.action" (ngModelChange)="applyFilters()">
+        <option value="">Todas</option>
+        @for (a of actions; track a) {
+          <option [value]="a">{{ actionLabels[a] }}</option>
+        }
+      </select>
+    </label>
+    <label class="field">
+      <span>Registo</span>
+      <select name="entityType" [(ngModel)]="filters.entityType" (ngModelChange)="applyFilters()">
+        <option value="">Todos</option>
+        @for (t of entityTypes; track t) {
+          <option [value]="t">{{ entityLabels[t] }}</option>
+        }
+      </select>
+    </label>
+    <label class="field">
+      <span>Resultado</span>
+      <select name="outcome" [(ngModel)]="filters.outcome" (ngModelChange)="applyFilters()">
+        <option value="">Todos</option>
+        @for (o of outcomes; track o) {
+          <option [value]="o">{{ outcomeLabels[o] }}</option>
+        }
+      </select>
+    </label>
+    @if (isSuperAdmin()) {
+      <label class="field">
+        <span>Hospital</span>
+        <select name="hospital" [(ngModel)]="filters.hospitalId" (ngModelChange)="applyFilters()">
+          <option value="">Todos</option>
+          @for (h of hospitals(); track h.id) {
+            <option [value]="h.id">{{ h.name }}</option>
+          }
+        </select>
+      </label>
+    }
+    <label class="field">
+      <span>De</span>
+      <input type="date" name="from" [(ngModel)]="filters.from" />
+    </label>
+    <label class="field">
+      <span>Até</span>
+      <input type="date" name="to" [(ngModel)]="filters.to" />
+    </label>
+    <button class="btn btn-secondary" type="submit">Filtrar</button>
+  </form>
+
+  @if (filters.entityId) {
+    <div class="alert alert-info" role="status">
+      A mostrar o histórico de um registo específico.
+      <button class="btn-link" type="button" (click)="clearEntity()">Ver todos</button>
+    </div>
+  }
+  @if (error(); as message) {
+    <div class="alert alert-error" role="alert">
+      {{ message }}
+      <button class="btn-link" type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  }
+
+  <div class="card table-card" [attr.aria-busy]="loading()">
+    @if (loading() && !result()) {
+      <p class="empty" role="status">A carregar eventos…</p>
+    } @else if (result(); as page) {
+      @if (page.content.length === 0) {
+        <p class="empty">Nenhum evento corresponde aos filtros.</p>
+      } @else {
+        <div class="table-scroll">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Data e hora</th>
+                <th scope="col">Autor</th>
+                <th scope="col">Acção</th>
+                <th scope="col">Resumo</th>
+                <th scope="col"><span class="visually-hidden">Detalhes</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (event of page.content; track event.id) {
+                <tr [class.denied]="event.outcome !== 'SUCCESS'">
+                  <td class="nowrap">{{ event.occurredAt | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
+                  <td>
+                    @if (event.actorUsername) {
+                      <strong>{{ event.actorName ?? event.actorUsername }}</strong>
+                      @if (event.actorName) {
+                        <span class="subtext">{{ event.actorUsername }}</span>
+                      }
+                    } @else {
+                      <span class="muted">Sistema</span>
+                    }
+                  </td>
+                  <td>
+                    {{ actionLabels[event.action] ?? event.action }}
+                    <span class="subtext">{{
+                      entityLabels[event.entityType] ?? event.entityType
+                    }}</span>
+                    @if (event.outcome !== 'SUCCESS') {
+                      <span class="badge badge-warning">{{ outcomeLabels[event.outcome] }}</span>
+                    }
+                  </td>
+                  <td>{{ event.summary }}</td>
+                  <td class="actions">
+                    <button
+                      class="btn btn-small btn-secondary"
+                      type="button"
+                      [attr.aria-expanded]="expanded() === event.id"
+                      (click)="toggle(event)"
+                    >
+                      {{ expanded() === event.id ? 'Fechar' : 'Detalhes' }}
+                    </button>
+                  </td>
+                </tr>
+                @if (expanded() === event.id) {
+                  <tr class="details">
+                    <td colspan="5">
+                      @let rows = changeRows(event.changes);
+                      @if (rows.length > 0) {
+                        <table class="changes">
+                          <thead>
+                            <tr>
+                              <th scope="col">Campo</th>
+                              @if (isEdit(event.changes)) {
+                                <th scope="col">Antes</th>
+                                <th scope="col">Depois</th>
+                              } @else {
+                                <th scope="col">Valor</th>
+                              }
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (row of rows; track row.field) {
+                              <tr>
+                                <td>{{ row.label }}</td>
+                                @if (isEdit(event.changes)) {
+                                  <td class="old">{{ row.from }}</td>
+                                }
+                                <td>{{ row.to }}</td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      }
+                      <dl class="meta">
+                        @if (event.entityId) {
+                          <dt>Id do registo</dt>
+                          <dd>
+                            <code>{{ event.entityId }}</code>
+                          </dd>
+                        }
+                        <dt>Pedido</dt>
+                        <dd>{{ event.requestMethod ?? '—' }} {{ event.requestPath ?? '' }}</dd>
+                        <dt>Endereço IP</dt>
+                        <dd>{{ event.ipAddress ?? '—' }}</dd>
+                        <dt>Navegador</dt>
+                        <dd>{{ event.userAgent ?? '—' }}</dd>
+                        <dt>Id do pedido</dt>
+                        <dd>
+                          <code>{{ event.requestId ?? '—' }}</code>
+                        </dd>
+                      </dl>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (page.totalPages > 1) {
+          <nav class="pagination" aria-label="Paginação">
+            <button
+              class="btn btn-small btn-secondary"
+              type="button"
+              [disabled]="page.page === 0 || loading()"
+              (click)="goToPage(page.page - 1)"
+            >
+              Anterior
+            </button>
+            <span>Página {{ page.page + 1 }} de {{ page.totalPages }}</span>
+            <button
+              class="btn btn-small btn-secondary"
+              type="button"
+              [disabled]="page.page + 1 >= page.totalPages || loading()"
+              (click)="goToPage(page.page + 1)"
+            >
+              Seguinte
+            </button>
+          </nav>
+        }
+        <p class="muted total">{{ page.totalElements }} evento(s).</p>
+      }
+    }
+  </div>
+  <p class="muted small"><a routerLink="/home">← Início</a></p>
+</section>

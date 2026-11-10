@@ -42,6 +42,14 @@ export const routes: Routes = [
         data: { roles: ACCESS.usersRead },
         loadChildren: () => import('./features/users/users.routes').then((m) => m.USER_ROUTES),
       },
+      {
+        path: 'audit',
+        title: 'Auditoria · Ngola Health',
+        canActivate: [roleGuard],
+        data: { roles: ACCESS.audit },
+        loadComponent: () =>
+          import('./features/audit/audit-list/audit-list').then((m) => m.AuditList),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

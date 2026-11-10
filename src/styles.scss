@@ -72,6 +72,10 @@ code {
   &.narrow {
     max-width: 52rem;
   }
+
+  &.wide {
+    max-width: 90rem;
+  }
 }
 
 .page-header {
@@ -392,4 +396,12 @@ fieldset.card {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1);
+}
+
+.security .btn + .btn {
+  margin-left: var(--space-2);
+}
+
+.form-actions .history {
+  margin-right: auto;
 }

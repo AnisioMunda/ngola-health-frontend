@@ -14,6 +14,7 @@ const NAV: NavItem[] = [
   { label: 'Início', path: '/home' },
   { label: 'Hospitais', path: '/hospitals', roles: ACCESS.hospitals },
   { label: 'Utilizadores', path: '/users', roles: ACCESS.usersRead },
+  { label: 'Auditoria', path: '/audit', roles: ACCESS.audit },
 ];
 
 /** Estrutura das páginas autenticadas: cabeçalho, menu conforme o perfil e conta. */

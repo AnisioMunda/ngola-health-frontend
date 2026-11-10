@@ -28,6 +28,12 @@ import { ACCESS } from '../../core/auth/roles';
             <span class="muted">Contas, perfis e senhas.</span>
           </a>
         }
+        @if (canAudit()) {
+          <a class="card tile" routerLink="/audit">
+            <strong>Auditoria</strong>
+            <span class="muted">Quem fez o quê, e quando.</span>
+          </a>
+        }
         @if (!canHospitals() && !canUsers()) {
           <p class="card muted">Os módulos do seu perfil ficarão disponíveis aqui.</p>
         }
@@ -58,4 +64,5 @@ export class Home {
   protected readonly user = this.auth.user;
   protected readonly canHospitals = computed(() => this.auth.hasAnyRole(ACCESS.hospitals));
   protected readonly canUsers = computed(() => this.auth.hasAnyRole(ACCESS.usersRead));
+  protected readonly canAudit = computed(() => this.auth.hasAnyRole(ACCESS.audit));
 }

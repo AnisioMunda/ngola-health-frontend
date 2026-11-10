@@ -43,13 +43,13 @@ function render(roles: Role[], hospitalName: string | null) {
 describe('Shell', () => {
   it('o administrador da plataforma vê hospitais e utilizadores', () => {
     const { links, account } = render(['SUPER_ADMIN'], null);
-    expect(links).toEqual(['Início', 'Hospitais', 'Utilizadores']);
+    expect(links).toEqual(['Início', 'Hospitais', 'Utilizadores', 'Auditoria']);
     expect(account).toContain('Plataforma');
   });
 
   it('o administrador do hospital não vê hospitais', () => {
     const { links, account } = render(['ADMIN'], 'HCL');
-    expect(links).toEqual(['Início', 'Utilizadores']);
+    expect(links).toEqual(['Início', 'Utilizadores', 'Auditoria']);
     expect(account).toContain('Administrador · HCL');
   });
 
