@@ -1,0 +1,166 @@
+<section class="page narrow">
+  <header class="page-header">
+    <div>
+      <a class="btn-link back" routerLink="/users">← Utilizadores</a>
+      <h1>{{ isEdit() ? 'Editar utilizador' : 'Novo utilizador' }}</h1>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <p class="card muted" role="status">A carregar utilizador…</p>
+  } @else if (isEdit() && !original()) {
+    <div class="alert alert-error" role="alert">{{ error() }}</div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <fieldset class="card">
+        <legend>Identificação</legend>
+        <div class="grid">
+          <label class="field span-2">
+            <span>Nome completo *</span>
+            <input formControlName="fullName" autocomplete="off" maxlength="200" />
+            @if (errorFor('fullName'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+          <label class="field">
+            <span>Nome de utilizador *</span>
+            <input
+              formControlName="username"
+              autocomplete="off"
+              autocapitalize="none"
+              maxlength="50"
+            />
+            @if (isEdit()) {
+              <small class="muted">Não pode ser alterado.</small>
+            }
+            @if (errorFor('username'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+          <label class="field">
+            <span>Correio electrónico *</span>
+            <input formControlName="email" type="email" autocomplete="off" />
+            @if (errorFor('email'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+          <label class="field">
+            <span>Telefone</span>
+            <input formControlName="phone" type="tel" placeholder="+244 923 000 000" />
+            @if (errorFor('phone'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="card">
+        <legend>Perfis e hospital</legend>
+        <div class="roles" role="group" aria-label="Perfis">
+          @for (role of availableRoles(); track role) {
+            <label class="check">
+              <input
+                type="checkbox"
+                [checked]="hasRole(role)"
+                (change)="toggleRole(role, $any($event.target).checked)"
+              />
+              {{ roleLabels[role] }}
+            </label>
+          }
+        </div>
+        @if (errorFor('roles'); as msg) {
+          <small class="field-error">{{ msg }}</small>
+        }
+        @if (isSuperAdmin() && !isPlatformAdminAccount()) {
+          <label class="field hospital">
+            <span>Hospital *</span>
+            <select formControlName="hospitalId">
+              <option value="">Seleccione…</option>
+              @if (original(); as u) {
+                @if (u.hospitalId && u.hospitalName) {
+                  <option [value]="u.hospitalId" hidden>{{ u.hospitalName }}</option>
+                }
+              }
+              @for (h of hospitals(); track h.id) {
+                <option [value]="h.id">{{ h.name }}</option>
+              }
+            </select>
+            @if (errorFor('hospitalId'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+        }
+      </fieldset>
+
+      <fieldset class="card">
+        <legend>Dados profissionais</legend>
+        <div class="grid">
+          <label class="field">
+            <span>Especialidade</span>
+            <input formControlName="specialty" maxlength="100" />
+          </label>
+          <label class="field">
+            <span>N.º da carteira profissional</span>
+            <input formControlName="professionalCardNumber" maxlength="50" />
+          </label>
+        </div>
+      </fieldset>
+
+      @if (!isEdit()) {
+        <fieldset class="card">
+          <legend>Senha temporária</legend>
+          <div class="password-row">
+            <label class="field grow">
+              <span>Senha temporária *</span>
+              <input formControlName="temporaryPassword" autocomplete="off" />
+            </label>
+            <button class="btn btn-secondary" type="button" (click)="regeneratePassword()">
+              Gerar outra
+            </button>
+          </div>
+          <small class="muted">
+            Comunique-a ao utilizador por um canal seguro. Será obrigado a trocá-la no primeiro
+            acesso.
+          </small>
+          @if (errorFor('temporaryPassword'); as msg) {
+            <small class="field-error">{{ msg }}</small>
+          }
+        </fieldset>
+      }
+
+      @if (error(); as message) {
+        <div class="alert alert-error" role="alert">{{ message }}</div>
+      }
+
+      <div class="form-actions">
+        <a class="btn btn-secondary" routerLink="/users">Cancelar</a>
+        <button class="btn btn-primary" type="submit" [disabled]="saving()">
+          {{ saving() ? 'A guardar…' : isEdit() ? 'Guardar alterações' : 'Criar utilizador' }}
+        </button>
+      </div>
+    </form>
+
+    @if (original(); as user) {
+      <section class="card security">
+        <h2>Segurança da conta</h2>
+        <p class="muted">
+          Repor a senha gera uma senha temporária, desbloqueia a conta e termina as sessões abertas.
+        </p>
+        @if (resetResult(); as password) {
+          <div class="alert alert-success" role="status">
+            Nova senha temporária de {{ user.fullName }}: <code class="secret">{{ password }}</code>
+            <span>Só é mostrada agora; comunique-a por um canal seguro.</span>
+          </div>
+        }
+        <button
+          class="btn btn-danger"
+          type="button"
+          [disabled]="resetting()"
+          (click)="resetPassword()"
+        >
+          {{ resetting() ? 'A repor…' : 'Repor senha' }}
+        </button>
+      </section>
+    }
+  }
+</section>

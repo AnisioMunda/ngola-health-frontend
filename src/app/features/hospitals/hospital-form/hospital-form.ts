@@ -28,7 +28,6 @@ const NOT_BLANK = Validators.pattern(/\S/);
   selector: 'app-hospital-form',
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './hospital-form.html',
-  styleUrl: './hospital-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HospitalForm implements OnInit {

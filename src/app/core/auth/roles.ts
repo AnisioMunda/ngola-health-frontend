@@ -1,0 +1,43 @@
+export type Role =
+  | 'SUPER_ADMIN'
+  | 'ADMIN'
+  | 'MANAGER'
+  | 'DOCTOR'
+  | 'NURSE'
+  | 'RECEPTIONIST'
+  | 'PHARMACIST'
+  | 'FINANCIAL'
+  | 'LAB_TECHNICIAN'
+  | 'PATIENT';
+
+export const ROLE_LABELS: Record<Role, string> = {
+  SUPER_ADMIN: 'Administrador da plataforma',
+  ADMIN: 'Administrador',
+  MANAGER: 'Gestor',
+  DOCTOR: 'Médico',
+  NURSE: 'Enfermeiro',
+  RECEPTIONIST: 'Recepcionista',
+  PHARMACIST: 'Farmacêutico',
+  FINANCIAL: 'Financeiro',
+  LAB_TECHNICIAN: 'Técnico de laboratório',
+  PATIENT: 'Paciente',
+};
+
+/** Perfis atribuíveis a utilizadores de um hospital (o paciente pertence ao portal). */
+export const STAFF_ROLES: Role[] = [
+  'ADMIN',
+  'MANAGER',
+  'DOCTOR',
+  'NURSE',
+  'RECEPTIONIST',
+  'PHARMACIST',
+  'FINANCIAL',
+  'LAB_TECHNICIAN',
+];
+
+/** Quem acede a cada área (espelha as regras do backend, que são as que valem). */
+export const ACCESS = {
+  hospitals: ['SUPER_ADMIN'],
+  usersRead: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'],
+  usersManage: ['SUPER_ADMIN', 'ADMIN'],
+} as const satisfies Record<string, readonly Role[]>;

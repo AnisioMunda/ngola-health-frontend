@@ -1,0 +1,165 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Utilizadores</h1>
+      <p class="muted">
+        Contas com acesso ao sistema{{ isSuperAdmin() ? '' : ' neste hospital' }}.
+      </p>
+    </div>
+    @if (canManage()) {
+      <a class="btn btn-primary" routerLink="new">Novo utilizador</a>
+    }
+  </header>
+
+  <form class="filters card" role="search" (ngSubmit)="applyFilters()">
+    <label class="field grow">
+      <span>Pesquisar</span>
+      <input
+        type="search"
+        name="search"
+        [(ngModel)]="searchTerm"
+        placeholder="Nome, utilizador ou correio"
+      />
+    </label>
+    <label class="field">
+      <span>Perfil</span>
+      <select name="role" [(ngModel)]="role" (ngModelChange)="applyFilters()">
+        <option value="">Todos</option>
+        @for (r of roleOptions(); track r) {
+          <option [value]="r">{{ roleLabels[r] }}</option>
+        }
+      </select>
+    </label>
+    <label class="field">
+      <span>Estado</span>
+      <select name="status" [(ngModel)]="status" (ngModelChange)="applyFilters()">
+        <option value="">Todos</option>
+        <option value="ACTIVE">Activos</option>
+        <option value="INACTIVE">Inactivos</option>
+      </select>
+    </label>
+    @if (isSuperAdmin()) {
+      <label class="field">
+        <span>Hospital</span>
+        <select name="hospital" [(ngModel)]="hospitalId" (ngModelChange)="applyFilters()">
+          <option value="">Todos</option>
+          @for (h of hospitals(); track h.id) {
+            <option [value]="h.id">{{ h.name }}</option>
+          }
+        </select>
+      </label>
+    }
+    <button class="btn btn-secondary" type="submit">Pesquisar</button>
+  </form>
+
+  @if (notice(); as message) {
+    <div class="alert alert-success" role="status">{{ message }}</div>
+  }
+  @if (error(); as message) {
+    <div class="alert alert-error" role="alert">
+      {{ message }}
+      <button class="btn-link" type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  }
+
+  <div class="card table-card" [attr.aria-busy]="loading()">
+    @if (loading() && !result()) {
+      <p class="empty" role="status">A carregar utilizadores…</p>
+    } @else if (result(); as page) {
+      @if (page.content.length === 0) {
+        <p class="empty">Nenhum utilizador encontrado.</p>
+      } @else {
+        <div class="table-scroll">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Nome</th>
+                <th scope="col">Perfis</th>
+                @if (isSuperAdmin()) {
+                  <th scope="col">Hospital</th>
+                }
+                <th scope="col">Último acesso</th>
+                <th scope="col">Estado</th>
+                @if (canManage()) {
+                  <th scope="col"><span class="visually-hidden">Acções</span></th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of page.content; track user.id) {
+                <tr [class.inactive]="user.status !== 'ACTIVE'">
+                  <td>
+                    <strong>{{ user.fullName }}</strong>
+                    <span class="subtext">{{ user.username }} · {{ user.email }}</span>
+                  </td>
+                  <td>{{ rolesOf(user) }}</td>
+                  @if (isSuperAdmin()) {
+                    <td>{{ user.hospitalName ?? 'Plataforma' }}</td>
+                  }
+                  <td>
+                    {{ user.lastLoginAt ? (user.lastLoginAt | date: 'dd/MM/yyyy HH:mm') : 'Nunca' }}
+                  </td>
+                  <td class="badges">
+                    <span class="badge" [class.badge-success]="user.status === 'ACTIVE'">
+                      {{ user.status === 'ACTIVE' ? 'Activo' : 'Inactivo' }}
+                    </span>
+                    @if (isLocked(user)) {
+                      <span class="badge badge-warning">Bloqueado</span>
+                    }
+                    @if (user.mustChangePassword) {
+                      <span class="badge">Senha temporária</span>
+                    }
+                  </td>
+                  @if (canManage()) {
+                    <td class="actions">
+                      <a
+                        class="btn btn-small btn-secondary"
+                        [routerLink]="[user.id, 'edit']"
+                        [attr.aria-label]="'Editar ' + user.fullName"
+                        >Editar</a
+                      >
+                      @if (user.id !== currentUserId()) {
+                        <button
+                          class="btn btn-small"
+                          [class.btn-danger]="user.status === 'ACTIVE'"
+                          [class.btn-secondary]="user.status !== 'ACTIVE'"
+                          type="button"
+                          [disabled]="busyId() === user.id"
+                          (click)="toggleStatus(user)"
+                        >
+                          {{ user.status === 'ACTIVE' ? 'Desactivar' : 'Activar' }}
+                        </button>
+                      }
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (page.totalPages > 1) {
+          <nav class="pagination" aria-label="Paginação">
+            <button
+              class="btn btn-small btn-secondary"
+              type="button"
+              [disabled]="page.page === 0 || loading()"
+              (click)="goToPage(page.page - 1)"
+            >
+              Anterior
+            </button>
+            <span>Página {{ page.page + 1 }} de {{ page.totalPages }}</span>
+            <button
+              class="btn btn-small btn-secondary"
+              type="button"
+              [disabled]="page.page + 1 >= page.totalPages || loading()"
+              (click)="goToPage(page.page + 1)"
+            >
+              Seguinte
+            </button>
+          </nav>
+        }
+        <p class="muted total">{{ page.totalElements }} utilizador(es) no total.</p>
+      }
+    }
+  </div>
+</section>

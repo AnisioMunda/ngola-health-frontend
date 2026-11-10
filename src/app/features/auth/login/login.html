@@ -1,0 +1,53 @@
+<main class="auth-page">
+  <section class="card auth-card">
+    <h1>Ngola Health</h1>
+    <p class="muted">Inicie sessão para continuar.</p>
+
+    @if (reason() === 'expired') {
+      <div class="alert alert-info" role="status">
+        A sua sessão expirou. Inicie sessão novamente.
+      </div>
+    }
+    @if (error(); as message) {
+      <div class="alert alert-error" role="alert">{{ message }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label class="field">
+        <span>Utilizador ou correio electrónico</span>
+        <input formControlName="login" autocomplete="username" autocapitalize="none" autofocus />
+        @if (form.controls.login.invalid && form.controls.login.touched) {
+          <small class="field-error">Indique o utilizador.</small>
+        }
+      </label>
+      <label class="field">
+        <span>Senha</span>
+        <span class="password-row">
+          <input
+            formControlName="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="current-password"
+          />
+          <button
+            class="btn btn-small btn-secondary"
+            type="button"
+            [attr.aria-pressed]="showPassword()"
+            (click)="showPassword.set(!showPassword())"
+          >
+            {{ showPassword() ? 'Ocultar' : 'Mostrar' }}
+          </button>
+        </span>
+        @if (form.controls.password.invalid && form.controls.password.touched) {
+          <small class="field-error">Indique a senha.</small>
+        }
+      </label>
+      <button class="btn btn-primary full" type="submit" [disabled]="submitting()">
+        {{ submitting() ? 'A entrar…' : 'Entrar' }}
+      </button>
+    </form>
+
+    @if (backendStatus() === 'DOWN') {
+      <p class="alert alert-error small" role="status">O servidor está indisponível de momento.</p>
+    }
+  </section>
+</main>

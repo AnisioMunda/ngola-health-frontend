@@ -1,7 +1,8 @@
 .topbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-5);
+  gap: var(--space-3) var(--space-5);
   padding: var(--space-3) var(--space-5);
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
@@ -16,7 +17,8 @@
 
 nav {
   display: flex;
-  gap: var(--space-3);
+  flex-wrap: wrap;
+  gap: var(--space-2);
   flex: 1;
 
   a {
@@ -33,19 +35,20 @@ nav {
   }
 }
 
-.status {
-  padding: var(--space-1) var(--space-3);
-  border-radius: 999px;
-  font-size: 0.8125rem;
-  background: var(--color-bg);
+.account {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
 
-  &.up {
-    background: var(--color-success-soft);
-    color: var(--color-success);
-  }
+.who {
+  display: flex;
+  flex-direction: column;
+  margin-right: var(--space-2);
+  text-align: right;
+  line-height: 1.2;
 
-  &.down {
-    background: var(--color-danger-soft);
-    color: var(--color-danger);
+  small {
+    color: var(--color-muted);
   }
 }

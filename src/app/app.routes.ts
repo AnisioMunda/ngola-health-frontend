@@ -1,11 +1,48 @@
 import { Routes } from '@angular/router';
 
+import { authGuard, guestGuard, passwordChangedGuard, roleGuard } from './core/auth/auth.guards';
+import { ACCESS } from './core/auth/roles';
+import { Shell } from './layout/shell/shell';
+
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'hospitals' },
   {
-    path: 'hospitals',
-    loadChildren: () =>
-      import('./features/hospitals/hospitals.routes').then((m) => m.HOSPITAL_ROUTES),
+    path: 'login',
+    title: 'Entrar · Ngola Health',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
+  },
+  {
+    path: 'change-password',
+    title: 'Alterar senha · Ngola Health',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/auth/change-password/change-password').then((m) => m.ChangePassword),
+  },
+  {
+    path: '',
+    component: Shell,
+    canActivate: [authGuard, passwordChangedGuard],
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'home' },
+      {
+        path: 'home',
+        title: 'Início · Ngola Health',
+        loadComponent: () => import('./features/home/home').then((m) => m.Home),
+      },
+      {
+        path: 'hospitals',
+        canActivate: [roleGuard],
+        data: { roles: ACCESS.hospitals },
+        loadChildren: () =>
+          import('./features/hospitals/hospitals.routes').then((m) => m.HOSPITAL_ROUTES),
+      },
+      {
+        path: 'users',
+        canActivate: [roleGuard],
+        data: { roles: ACCESS.usersRead },
+        loadChildren: () => import('./features/users/users.routes').then((m) => m.USER_ROUTES),
+      },
+    ],
   },
   { path: '**', redirectTo: '' },
 ];

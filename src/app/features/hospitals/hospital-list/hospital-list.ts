@@ -16,7 +16,6 @@ const PAGE_SIZE = 20;
   selector: 'app-hospital-list',
   imports: [FormsModule, RouterLink],
   templateUrl: './hospital-list.html',
-  styleUrl: './hospital-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HospitalList implements OnInit {

@@ -1,0 +1,21 @@
+<header class="topbar">
+  <a class="brand" routerLink="/home">Ngola Health</a>
+  <nav aria-label="Navegação principal">
+    @for (item of nav(); track item.path) {
+      <a [routerLink]="item.path" routerLinkActive="active">{{ item.label }}</a>
+    }
+  </nav>
+  @if (user(); as u) {
+    <div class="account">
+      <span class="who">
+        <strong>{{ u.fullName }}</strong>
+        <small>{{ roleLabel() }} · {{ u.hospitalName ?? 'Plataforma' }}</small>
+      </span>
+      <a class="btn btn-small btn-secondary" routerLink="/change-password">Alterar senha</a>
+      <button class="btn btn-small btn-secondary" type="button" (click)="logout()">Sair</button>
+    </div>
+  }
+</header>
+<main>
+  <router-outlet />
+</main>
