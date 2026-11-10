@@ -1,24 +1,29 @@
 import { TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
+import { describe, expect, it } from 'vitest';
+
 import { App } from './app';
+import { BackendStatus, SystemStatusService } from './core/system/system-status.service';
+
+function render(status: BackendStatus) {
+  TestBed.configureTestingModule({
+    imports: [App],
+    providers: [{ provide: SystemStatusService, useValue: { checkBackend: () => of(status) } }],
+  });
+  const fixture = TestBed.createComponent(App);
+  fixture.detectChanges();
+  return fixture.nativeElement as HTMLElement;
+}
 
 describe('App', () => {
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [App],
-    })
-      .compileComponents();
+  it('mostra o backend como disponível', () => {
+    const el = render('UP');
+    expect(el.querySelector('h1')?.textContent).toContain('Ngola Health');
+    expect(el.querySelector('.status')?.textContent).toContain('Backend disponível');
   });
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
-
-  it('should render title', async () => {
-    const fixture = TestBed.createComponent(App);
-    await fixture.whenStable();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, frontend');
+  it('mostra o backend como indisponível', () => {
+    const el = render('DOWN');
+    expect(el.querySelector('.status.down')?.textContent).toContain('Backend indisponível');
   });
 });

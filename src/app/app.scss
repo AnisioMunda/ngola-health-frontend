@@ -1,0 +1,23 @@
+.foundation {
+  display: grid;
+  place-content: center;
+  gap: 0.5rem;
+  min-height: 100vh;
+  text-align: center;
+}
+
+.status {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: #eef0f3;
+
+  &.up {
+    background: #e3f6ea;
+    color: #136c34;
+  }
+
+  &.down {
+    background: #fde8e8;
+    color: #a01c1c;
+  }
+}
