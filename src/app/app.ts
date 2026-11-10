@@ -1,16 +1,17 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { RouterOutlet } from '@angular/router';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { SystemStatusService } from './core/system/system-status.service';
 
+/** Shell provisório; o menu por perfil chega com o módulo de autenticação. */
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './app.html',
   styleUrl: './app.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
-  // Indicador provisório da fundação; será substituído pelo layout no módulo de autenticação.
   protected readonly backendStatus = toSignal(inject(SystemStatusService).checkBackend());
 }

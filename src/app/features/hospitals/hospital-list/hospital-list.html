@@ -1,0 +1,147 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Hospitais</h1>
+      <p class="muted">Instituições de saúde registadas na plataforma.</p>
+    </div>
+    <a class="btn btn-primary" routerLink="new">Registar hospital</a>
+  </header>
+
+  <form class="filters card" role="search" (ngSubmit)="applyFilters()">
+    <label class="field grow">
+      <span>Pesquisar</span>
+      <input
+        type="search"
+        name="search"
+        [(ngModel)]="searchTerm"
+        placeholder="Nome, código, província ou município"
+      />
+    </label>
+    <label class="field">
+      <span>Estado</span>
+      <select name="status" [(ngModel)]="status" (ngModelChange)="applyFilters()">
+        <option value="all">Todos</option>
+        <option value="active">Activos</option>
+        <option value="inactive">Inactivos</option>
+      </select>
+    </label>
+    <button class="btn btn-secondary" type="submit">Pesquisar</button>
+  </form>
+
+  @if (notice(); as message) {
+    <div class="alert alert-success" role="status">{{ message }}</div>
+  }
+  @if (error(); as message) {
+    <div class="alert alert-error" role="alert">
+      {{ message }}
+      <button class="btn-link" type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  }
+
+  <div class="card table-card" [attr.aria-busy]="loading()">
+    @if (loading() && !result()) {
+      <p class="empty" role="status">A carregar hospitais…</p>
+    } @else if (result(); as page) {
+      @if (page.content.length === 0) {
+        <p class="empty">
+          @if (searchTerm || status !== 'all') {
+            Nenhum hospital corresponde aos filtros.
+          } @else {
+            Ainda não há hospitais registados.
+          }
+        </p>
+      } @else {
+        <div class="table-scroll">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Instituição</th>
+                <th scope="col">Código</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Localização</th>
+                <th scope="col">Contacto</th>
+                <th scope="col">Estado</th>
+                <th scope="col"><span class="visually-hidden">Acções</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (hospital of page.content; track hospital.id) {
+                <tr [class.inactive]="!hospital.active">
+                  <td>
+                    <strong>{{ hospital.name }}</strong>
+                    @if (hospital.taxId) {
+                      <span class="subtext">NIF {{ hospital.taxId }}</span>
+                    }
+                  </td>
+                  <td>
+                    <code>{{ hospital.code }}</code>
+                  </td>
+                  <td>{{ typeLabels[hospital.type] }}</td>
+                  <td>
+                    {{ hospital.municipality ? hospital.municipality + ', ' : ''
+                    }}{{ hospital.province }}
+                  </td>
+                  <td>
+                    {{ hospital.phone ?? '—' }}
+                    @if (hospital.email) {
+                      <span class="subtext">{{ hospital.email }}</span>
+                    }
+                  </td>
+                  <td>
+                    <span class="badge" [class.badge-success]="hospital.active">
+                      {{ hospital.active ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </td>
+                  <td class="actions">
+                    <a
+                      class="btn btn-small btn-secondary"
+                      [routerLink]="[hospital.id, 'edit']"
+                      [attr.aria-label]="'Editar ' + hospital.name"
+                      >Editar</a
+                    >
+                    <button
+                      class="btn btn-small"
+                      [class.btn-danger]="hospital.active"
+                      [class.btn-secondary]="!hospital.active"
+                      type="button"
+                      [disabled]="busyId() === hospital.id"
+                      [attr.aria-label]="
+                        (hospital.active ? 'Desactivar ' : 'Activar ') + hospital.name
+                      "
+                      (click)="toggleStatus(hospital)"
+                    >
+                      {{ hospital.active ? 'Desactivar' : 'Activar' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (page.totalPages > 1) {
+          <nav class="pagination" aria-label="Paginação">
+            <button
+              class="btn btn-small btn-secondary"
+              type="button"
+              [disabled]="page.page === 0 || loading()"
+              (click)="goToPage(page.page - 1)"
+            >
+              Anterior
+            </button>
+            <span>Página {{ page.page + 1 }} de {{ page.totalPages }}</span>
+            <button
+              class="btn btn-small btn-secondary"
+              type="button"
+              [disabled]="page.page + 1 >= page.totalPages || loading()"
+              (click)="goToPage(page.page + 1)"
+            >
+              Seguinte
+            </button>
+          </nav>
+        }
+        <p class="muted total">{{ page.totalElements }} hospital(is) no total.</p>
+      }
+    }
+  </div>
+</section>

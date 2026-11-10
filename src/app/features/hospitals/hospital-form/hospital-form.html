@@ -1,0 +1,128 @@
+<section class="page narrow">
+  <header class="page-header">
+    <div>
+      <a class="btn-link back" routerLink="/hospitals">← Hospitais</a>
+      <h1>{{ isEdit() ? 'Editar hospital' : 'Registar hospital' }}</h1>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <p class="card muted" role="status">A carregar dados do hospital…</p>
+  } @else if (isEdit() && !original()) {
+    <div class="alert alert-error" role="alert">{{ error() }}</div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <fieldset class="card">
+        <legend>Identificação</legend>
+        <div class="grid">
+          <label class="field span-2">
+            <span>Nome da instituição *</span>
+            <input formControlName="name" autocomplete="organization" maxlength="200" />
+            @if (errorFor('name'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+          <label class="field">
+            <span>Código *</span>
+            <input
+              formControlName="code"
+              maxlength="20"
+              autocomplete="off"
+              placeholder="HGL-001"
+              (input)="normalizeCode()"
+            />
+            @if (errorFor('code'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+          <label class="field">
+            <span>Tipo *</span>
+            <select formControlName="type">
+              <option value="" disabled>Seleccione…</option>
+              @for (t of types; track t.value) {
+                <option [value]="t.value">{{ t.label }}</option>
+              }
+            </select>
+            @if (errorFor('type'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="card">
+        <legend>Localização</legend>
+        <div class="grid">
+          <label class="field">
+            <span>Província *</span>
+            <input
+              formControlName="province"
+              list="angola-provinces"
+              autocomplete="address-level1"
+            />
+            <datalist id="angola-provinces">
+              @for (p of provinces; track p) {
+                <option [value]="p"></option>
+              }
+            </datalist>
+            @if (errorFor('province'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+          <label class="field">
+            <span>Município</span>
+            <input formControlName="municipality" autocomplete="address-level2" maxlength="100" />
+            @if (errorFor('municipality'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+          <label class="field span-2">
+            <span>Morada</span>
+            <textarea formControlName="address" rows="2" maxlength="500"></textarea>
+            @if (errorFor('address'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="card">
+        <legend>Contactos e dados fiscais</legend>
+        <div class="grid">
+          <label class="field">
+            <span>Telefone</span>
+            <input formControlName="phone" type="tel" placeholder="+244 923 000 000" />
+            @if (errorFor('phone'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+          <label class="field">
+            <span>Correio electrónico</span>
+            <input formControlName="email" type="email" autocomplete="email" />
+            @if (errorFor('email'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+          <label class="field">
+            <span>NIF</span>
+            <input formControlName="taxId" maxlength="14" autocomplete="off" />
+            @if (errorFor('taxId'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+        </div>
+      </fieldset>
+
+      @if (error(); as message) {
+        <div class="alert alert-error" role="alert">{{ message }}</div>
+      }
+
+      <div class="form-actions">
+        <a class="btn btn-secondary" routerLink="/hospitals">Cancelar</a>
+        <button class="btn btn-primary" type="submit" [disabled]="saving()">
+          {{ saving() ? 'A guardar…' : isEdit() ? 'Guardar alterações' : 'Registar hospital' }}
+        </button>
+      </div>
+    </form>
+  }
+</section>

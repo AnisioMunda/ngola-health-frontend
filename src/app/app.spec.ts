@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 
@@ -8,7 +9,10 @@ import { BackendStatus, SystemStatusService } from './core/system/system-status.
 function render(status: BackendStatus) {
   TestBed.configureTestingModule({
     imports: [App],
-    providers: [{ provide: SystemStatusService, useValue: { checkBackend: () => of(status) } }],
+    providers: [
+      provideRouter([]),
+      { provide: SystemStatusService, useValue: { checkBackend: () => of(status) } },
+    ],
   });
   const fixture = TestBed.createComponent(App);
   fixture.detectChanges();
@@ -16,10 +20,11 @@ function render(status: BackendStatus) {
 }
 
 describe('App', () => {
-  it('mostra o backend como disponível', () => {
+  it('mostra a marca, a navegação e o backend disponível', () => {
     const el = render('UP');
-    expect(el.querySelector('h1')?.textContent).toContain('Ngola Health');
-    expect(el.querySelector('.status')?.textContent).toContain('Backend disponível');
+    expect(el.querySelector('.brand')?.textContent).toContain('Ngola Health');
+    expect(el.querySelector('nav a')?.textContent).toContain('Hospitais');
+    expect(el.querySelector('.status.up')?.textContent).toContain('Backend disponível');
   });
 
   it('mostra o backend como indisponível', () => {

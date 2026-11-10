@@ -1,0 +1,30 @@
+fieldset {
+  margin: 0 0 var(--space-4);
+  border: 1px solid var(--color-border);
+}
+
+legend {
+  padding: 0 var(--space-2);
+  font-weight: 600;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-3) var(--space-4);
+}
+
+.span-2 {
+  grid-column: 1 / -1;
+}
+
+.back {
+  display: inline-block;
+  margin-bottom: var(--space-2);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}

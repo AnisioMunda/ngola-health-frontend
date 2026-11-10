@@ -1,6 +1,14 @@
-<main class="foundation">
-  <h1>Ngola Health</h1>
-  <p class="status" [class.up]="backendStatus() === 'UP'" [class.down]="backendStatus() === 'DOWN'">
+<header class="topbar">
+  <a class="brand" routerLink="/">Ngola Health</a>
+  <nav aria-label="Navegação principal">
+    <a routerLink="/hospitals" routerLinkActive="active">Hospitais</a>
+  </nav>
+  <span
+    class="status"
+    role="status"
+    [class.up]="backendStatus() === 'UP'"
+    [class.down]="backendStatus() === 'DOWN'"
+  >
     @switch (backendStatus()) {
       @case ('UP') {
         Backend disponível
@@ -12,6 +20,8 @@
         A verificar o backend…
       }
     }
-  </p>
+  </span>
+</header>
+<main>
+  <router-outlet />
 </main>
-<router-outlet />
