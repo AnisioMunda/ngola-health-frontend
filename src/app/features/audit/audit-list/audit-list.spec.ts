@@ -33,20 +33,18 @@ describe('AuditList', () => {
   let search: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    search = vi
-      .fn()
-      .mockReturnValue(
-        of({
-          content: [
-            EVENT,
-            { ...EVENT, id: 'e2', action: 'LOGIN_FAILED', outcome: 'FAILURE', changes: null },
-          ],
-          page: 0,
-          size: 50,
-          totalElements: 2,
-          totalPages: 1,
-        }),
-      );
+    search = vi.fn().mockReturnValue(
+      of({
+        content: [
+          EVENT,
+          { ...EVENT, id: 'e2', action: 'LOGIN_FAILED', outcome: 'FAILURE', changes: null },
+        ],
+        page: 0,
+        size: 50,
+        totalElements: 2,
+        totalPages: 1,
+      }),
+    );
     TestBed.configureTestingModule({
       imports: [AuditList],
       providers: [

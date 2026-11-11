@@ -12,6 +12,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { label: 'Início', path: '/home' },
+  { label: 'Pacientes', path: '/patients', roles: ACCESS.patientsRead },
   { label: 'Hospitais', path: '/hospitals', roles: ACCESS.hospitals },
   { label: 'Utilizadores', path: '/users', roles: ACCESS.usersRead },
   { label: 'Auditoria', path: '/audit', roles: ACCESS.audit },

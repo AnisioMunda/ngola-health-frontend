@@ -1,0 +1,118 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Pacientes</h1>
+      <p class="muted">Pesquise por nome, número de processo, BI, cartão de saúde ou telefone.</p>
+    </div>
+    @if (canWrite()) {
+      <a class="btn btn-primary" routerLink="new">Registar paciente</a>
+    }
+  </header>
+
+  <form class="filters card" role="search" (ngSubmit)="applyFilters()">
+    <label class="field grow">
+      <span>Pesquisar</span>
+      <input
+        type="search"
+        name="search"
+        [(ngModel)]="searchTerm"
+        placeholder="Ex.: Ana Silva, 000123, 923…"
+        autofocus
+      />
+    </label>
+    @if (isAdmin()) {
+      <label class="field">
+        <span>Estado</span>
+        <select name="status" [(ngModel)]="status" (ngModelChange)="applyFilters()">
+          <option value="active">Activos</option>
+          <option value="inactive">Inactivos</option>
+          <option value="all">Todos</option>
+        </select>
+      </label>
+    }
+    <button class="btn btn-secondary" type="submit">Pesquisar</button>
+  </form>
+
+  @if (error(); as message) {
+    <div class="alert alert-error" role="alert">
+      {{ message }}
+      <button class="btn-link" type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  }
+
+  <div class="card table-card" [attr.aria-busy]="loading()">
+    @if (loading() && !result()) {
+      <p class="empty" role="status">A carregar pacientes…</p>
+    } @else if (result(); as page) {
+      @if (page.content.length === 0) {
+        <p class="empty">
+          Nenhum paciente encontrado.
+          @if (canWrite()) {
+            <a routerLink="new">Registar um novo paciente</a>
+          }
+        </p>
+      } @else {
+        <div class="table-scroll">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Processo</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Nascimento</th>
+                <th scope="col">BI</th>
+                <th scope="col">Telefone</th>
+                <th scope="col"><span class="visually-hidden">Acções</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of page.content; track p.id) {
+                <tr [class.inactive]="!p.active">
+                  <td>
+                    <code>{{ p.recordNumber }}</code>
+                  </td>
+                  <td>
+                    <strong>{{ p.fullName }}</strong>
+                    <span class="subtext">
+                      {{ genderLabels[p.gender] }} · {{ p.age }} anos
+                      @if (!p.active) {
+                        · Inactivo
+                      }
+                    </span>
+                  </td>
+                  <td>{{ p.birthDate | date: 'dd/MM/yyyy' }}</td>
+                  <td>{{ p.nationalId ?? '—' }}</td>
+                  <td>{{ p.phone ?? '—' }}</td>
+                  <td class="actions">
+                    <a class="btn btn-small btn-secondary" [routerLink]="p.id">Abrir ficha</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (page.totalPages > 1) {
+          <nav class="pagination" aria-label="Paginação">
+            <button
+              class="btn btn-small btn-secondary"
+              type="button"
+              [disabled]="page.page === 0 || loading()"
+              (click)="goToPage(page.page - 1)"
+            >
+              Anterior
+            </button>
+            <span>Página {{ page.page + 1 }} de {{ page.totalPages }}</span>
+            <button
+              class="btn btn-small btn-secondary"
+              type="button"
+              [disabled]="page.page + 1 >= page.totalPages || loading()"
+              (click)="goToPage(page.page + 1)"
+            >
+              Seguinte
+            </button>
+          </nav>
+        }
+        <p class="muted total">{{ page.totalElements }} paciente(s).</p>
+      }
+    }
+  </div>
+</section>

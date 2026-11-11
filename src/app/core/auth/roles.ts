@@ -41,4 +41,7 @@ export const ACCESS = {
   usersRead: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'],
   usersManage: ['SUPER_ADMIN', 'ADMIN'],
   audit: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'],
+  patientsRead: ['ADMIN', 'MANAGER', 'DOCTOR', 'NURSE', 'RECEPTIONIST'],
+  patientsWrite: ['ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST'],
+  patientsAdmin: ['ADMIN'],
 } as const satisfies Record<string, readonly Role[]>;

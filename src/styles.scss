@@ -405,3 +405,18 @@ fieldset.card {
 .form-actions .history {
   margin-right: auto;
 }
+
+.alert-warning {
+  flex-direction: column;
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+
+  ul {
+    margin: 0;
+    padding-left: var(--space-5);
+  }
+
+  p {
+    margin: 0;
+  }
+}

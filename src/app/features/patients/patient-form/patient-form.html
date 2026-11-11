@@ -1,0 +1,202 @@
+<section class="page narrow">
+  <header class="page-header">
+    <div>
+      <a class="btn-link back" [routerLink]="isEdit() ? ['/patients', id()] : '/patients'"
+        >← Voltar</a
+      >
+      <h1>{{ isEdit() ? 'Editar ficha' : 'Registar paciente' }}</h1>
+      @if (original(); as p) {
+        <p class="muted">
+          Processo <code>{{ p.recordNumber }}</code>
+        </p>
+      } @else if (!isEdit()) {
+        <p class="muted">O número de processo é atribuído automaticamente.</p>
+      }
+    </div>
+  </header>
+
+  @if (loading()) {
+    <p class="card muted" role="status">A carregar ficha…</p>
+  } @else if (isEdit() && !original()) {
+    <div class="alert alert-error" role="alert">{{ error() }}</div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <fieldset class="card">
+        <legend>Identificação</legend>
+        <div class="grid">
+          <label class="field span-2">
+            <span>Nome completo *</span>
+            <input formControlName="fullName" autocomplete="off" maxlength="200" />
+            @if (errorFor('fullName'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+          <label class="field">
+            <span>Data de nascimento *</span>
+            <input formControlName="birthDate" type="date" [max]="maxDate" />
+            @if (errorFor('birthDate'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+          <label class="field">
+            <span>Género *</span>
+            <select formControlName="gender">
+              <option value="" disabled>Seleccione…</option>
+              @for (g of genders; track g[0]) {
+                <option [value]="g[0]">{{ g[1] }}</option>
+              }
+            </select>
+            @if (errorFor('gender'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+          <label class="field">
+            <span>BI / NIF</span>
+            <input
+              formControlName="nationalId"
+              autocomplete="off"
+              maxlength="14"
+              placeholder="000000000LA000"
+            />
+            @if (errorFor('nationalId'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+          <label class="field">
+            <span>Cartão de saúde</span>
+            <input formControlName="healthCardNumber" autocomplete="off" maxlength="30" />
+          </label>
+          <label class="field">
+            <span>Grupo sanguíneo</span>
+            <select formControlName="bloodType">
+              <option value="">Desconhecido</option>
+              @for (b of bloodTypes; track b) {
+                <option [value]="b">{{ b }}</option>
+              }
+            </select>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="card">
+        <legend>Contactos e morada</legend>
+        <div class="grid">
+          <label class="field">
+            <span>Telefone</span>
+            <input formControlName="phone" type="tel" placeholder="+244 923 000 000" />
+            @if (errorFor('phone'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+          <label class="field">
+            <span>Correio electrónico</span>
+            <input formControlName="email" type="email" />
+            @if (errorFor('email'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+          <label class="field span-2">
+            <span>Morada</span>
+            <input formControlName="address" maxlength="500" />
+          </label>
+          <label class="field">
+            <span>Província</span>
+            <input formControlName="province" list="patient-provinces" />
+            <datalist id="patient-provinces">
+              @for (p of provinces; track p) {
+                <option [value]="p"></option>
+              }
+            </datalist>
+          </label>
+          <label class="field">
+            <span>Município</span>
+            <input formControlName="municipality" maxlength="100" />
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="card">
+        <legend>Contacto de emergência</legend>
+        <div class="grid">
+          <label class="field">
+            <span>Nome</span>
+            <input formControlName="emergencyContactName" maxlength="200" />
+          </label>
+          <label class="field">
+            <span>Parentesco</span>
+            <input
+              formControlName="emergencyContactRelationship"
+              maxlength="50"
+              placeholder="Mãe, cônjuge…"
+            />
+          </label>
+          <label class="field">
+            <span>Telefone</span>
+            <input formControlName="emergencyContactPhone" type="tel" />
+            @if (errorFor('emergencyContactPhone'); as msg) {
+              <small class="field-error">{{ msg }}</small>
+            }
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="card">
+        <legend>Informação clínica de base</legend>
+        <div class="grid">
+          <label class="field span-2">
+            <span>Alergias</span>
+            <textarea formControlName="allergies" rows="2" placeholder="Ex.: penicilina"></textarea>
+          </label>
+          <label class="field span-2">
+            <span>Doenças crónicas</span>
+            <textarea formControlName="chronicConditions" rows="2"></textarea>
+          </label>
+          <label class="field span-2">
+            <span>Observações</span>
+            <textarea formControlName="notes" rows="3"></textarea>
+          </label>
+        </div>
+      </fieldset>
+
+      @if (duplicates(); as found) {
+        <div class="alert alert-warning duplicates" role="alertdialog" aria-labelledby="dup-title">
+          <strong id="dup-title">Possível paciente já registado</strong>
+          <p>Verifique se não se trata da mesma pessoa antes de criar um novo processo:</p>
+          <ul>
+            @for (d of found; track d.id) {
+              <li>
+                <a [routerLink]="['/patients', d.id]" target="_blank">{{ d.fullName }}</a>
+                — processo {{ d.recordNumber }}, {{ d.age }} anos{{
+                  d.phone ? ', tel. ' + d.phone : ''
+                }}{{ d.nationalId ? ', BI ' + d.nationalId : '' }}
+              </li>
+            }
+          </ul>
+          <div class="form-actions">
+            <button class="btn btn-secondary" type="button" (click)="cancelDuplicate()">
+              Rever dados
+            </button>
+            <button class="btn btn-primary" type="button" (click)="confirmNew()">
+              É outra pessoa, registar
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (error(); as message) {
+        <div class="alert alert-error" role="alert">{{ message }}</div>
+      }
+
+      @if (!duplicates()) {
+        <div class="form-actions">
+          <a class="btn btn-secondary" [routerLink]="isEdit() ? ['/patients', id()] : '/patients'"
+            >Cancelar</a
+          >
+          <button class="btn btn-primary" type="submit" [disabled]="saving()">
+            {{ saving() ? 'A guardar…' : isEdit() ? 'Guardar alterações' : 'Registar paciente' }}
+          </button>
+        </div>
+      }
+    </form>
+  }
+</section>

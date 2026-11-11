@@ -1,0 +1,116 @@
+<section class="page narrow">
+  <a class="btn-link back" routerLink="/patients">← Pacientes</a>
+
+  @if (loading()) {
+    <p class="card muted" role="status">A abrir ficha…</p>
+  } @else if (patient(); as p) {
+    <header class="page-header">
+      <div>
+        <h1>{{ p.fullName }}</h1>
+        <p class="muted">
+          Processo <code>{{ p.recordNumber }}</code> · {{ genderLabels[p.gender] }} ·
+          {{ p.age }} anos
+          @if (!p.active) {
+            · <span class="badge">Inactivo</span>
+          }
+        </p>
+      </div>
+      <div class="header-actions">
+        @if (canAudit()) {
+          <a
+            class="btn btn-link"
+            routerLink="/audit"
+            [queryParams]="{ entityType: 'PATIENT', entityId: p.id }"
+            >Ver histórico</a
+          >
+        }
+        @if (isAdmin()) {
+          <button
+            class="btn btn-secondary"
+            type="button"
+            [disabled]="busy()"
+            (click)="toggleActive()"
+          >
+            {{ p.active ? 'Inactivar' : 'Reactivar' }}
+          </button>
+        }
+        @if (canWrite() && p.active) {
+          <a class="btn btn-primary" [routerLink]="['/patients', p.id, 'edit']">Editar</a>
+        }
+      </div>
+    </header>
+
+    @if (notice(); as message) {
+      <div class="alert alert-success" role="status">{{ message }}</div>
+    }
+    @if (error(); as message) {
+      <div class="alert alert-error" role="alert">{{ message }}</div>
+    }
+
+    @if (p.allergies) {
+      <div class="alert alert-error allergy" role="note">
+        <strong>Alergias:</strong> {{ p.allergies }}
+      </div>
+    }
+
+    <div class="card">
+      <h2>Identificação</h2>
+      <dl class="data">
+        <dt>Data de nascimento</dt>
+        <dd>{{ p.birthDate | date: 'dd/MM/yyyy' }}</dd>
+        <dt>BI / NIF</dt>
+        <dd>{{ p.nationalId ?? '—' }}</dd>
+        <dt>Cartão de saúde</dt>
+        <dd>{{ p.healthCardNumber ?? '—' }}</dd>
+        <dt>Grupo sanguíneo</dt>
+        <dd>{{ p.bloodType ?? '—' }}</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h2>Contactos</h2>
+      <dl class="data">
+        <dt>Telefone</dt>
+        <dd>{{ p.phone ?? '—' }}</dd>
+        <dt>Correio electrónico</dt>
+        <dd>{{ p.email ?? '—' }}</dd>
+        <dt>Morada</dt>
+        <dd>
+          {{ p.address ?? '—' }}
+          @if (place(); as where) {
+            <span class="subtext">{{ where }}</span>
+          }
+        </dd>
+        <dt>Contacto de emergência</dt>
+        <dd>
+          @if (p.emergencyContactName) {
+            {{ p.emergencyContactName }}
+            @if (p.emergencyContactRelationship) {
+              ({{ p.emergencyContactRelationship }})
+            }
+            · {{ p.emergencyContactPhone ?? 'sem telefone' }}
+          } @else {
+            —
+          }
+        </dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h2>Informação clínica de base</h2>
+      <dl class="data">
+        <dt>Doenças crónicas</dt>
+        <dd class="pre">{{ p.chronicConditions ?? '—' }}</dd>
+        <dt>Observações</dt>
+        <dd class="pre">{{ p.notes ?? '—' }}</dd>
+      </dl>
+    </div>
+
+    <p class="muted small">
+      Registado em {{ p.createdAt | date: 'dd/MM/yyyy HH:mm' }} · última alteração
+      {{ p.updatedAt | date: 'dd/MM/yyyy HH:mm' }}
+    </p>
+  } @else {
+    <div class="alert alert-error" role="alert">{{ error() }}</div>
+  }
+</section>
