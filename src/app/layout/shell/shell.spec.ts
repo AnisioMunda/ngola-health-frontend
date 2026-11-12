@@ -1,10 +1,13 @@
 import { TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 
 import { AuthUser } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { Role } from '../../core/auth/roles';
+import { NotificationService } from '../../features/notifications/data/notification.service';
 import { Shell } from './shell';
 
 function render(roles: Role[], hospitalName: string | null) {
@@ -23,6 +26,10 @@ function render(roles: Role[], hospitalName: string | null) {
     providers: [
       provideRouter([]),
       {
+        provide: NotificationService,
+        useValue: { unread: signal(2).asReadonly(), refreshCount: () => of({ count: 2 }) },
+      },
+      {
         provide: AuthService,
         useValue: {
           user: () => user,
@@ -37,6 +44,7 @@ function render(roles: Role[], hospitalName: string | null) {
   return {
     links: [...el.querySelectorAll('nav a')].map((a) => a.textContent?.trim()),
     account: el.querySelector('.who')?.textContent ?? '',
+    bell: el.querySelector('app-notification-bell'),
   };
 }
 
@@ -45,8 +53,13 @@ describe('Shell', () => {
     expect(render(['PHARMACIST'], 'HCL').links).toEqual(['Início', 'Prescrições', 'Farmácia']);
   });
 
+  it('quem trabalha num hospital tem o sino de notificações', () => {
+    expect(render(['DOCTOR'], 'HCL').bell).not.toBeNull();
+  });
+
   it('o administrador da plataforma vê hospitais e utilizadores', () => {
-    const { links, account } = render(['SUPER_ADMIN'], null);
+    const { links, account, bell } = render(['SUPER_ADMIN'], null);
+    expect(bell).toBeNull();
     expect(links).toEqual(['Início', 'Hospitais', 'Utilizadores', 'Auditoria']);
     expect(account).toContain('Plataforma');
   });

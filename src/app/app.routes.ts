@@ -86,6 +86,14 @@ export const routes: Routes = [
           import('./features/laboratory/laboratory.routes').then((m) => m.LAB_ROUTES),
       },
       {
+        path: 'notifications',
+        title: 'Notificações · Ngola Health',
+        loadComponent: () =>
+          import('./features/notifications/notification-list/notification-list').then(
+            (m) => m.NotificationList,
+          ),
+      },
+      {
         path: 'audit',
         title: 'Auditoria · Ngola Health',
         canActivate: [roleGuard],

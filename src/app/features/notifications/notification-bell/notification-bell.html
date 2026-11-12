@@ -1,0 +1,59 @@
+<button
+  class="bell"
+  type="button"
+  [attr.aria-expanded]="open()"
+  aria-controls="notification-panel"
+  [attr.aria-label]="unread() > 0 ? 'Notificações, ' + unread() + ' por ler' : 'Notificações'"
+  (click)="toggle()"
+>
+  <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20">
+    <path
+      fill="currentColor"
+      d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 0 0-5.5-6.84V3.5a1.5 1.5 0 0 0-3 0v.66A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2Z"
+    />
+  </svg>
+  @if (unread() > 0) {
+    <span class="count" aria-hidden="true">{{ unread() > 99 ? '99+' : unread() }}</span>
+  }
+</button>
+
+@if (open()) {
+  <div class="panel" id="notification-panel" role="region" aria-label="Notificações por ler">
+    <div class="panel-header">
+      <strong>Por ler</strong>
+      @if (items()?.length) {
+        <button class="link-button" type="button" (click)="markAllRead()">
+          Marcar todas como lidas
+        </button>
+      }
+    </div>
+    @if (error(); as message) {
+      <p class="alert alert-error" role="alert">{{ message }}</p>
+    }
+    @if (items(); as list) {
+      @if (list.length === 0) {
+        <p class="empty">Não tem notificações por ler.</p>
+      } @else {
+        <ul>
+          @for (n of list; track n.id) {
+            <li>
+              <button type="button" class="item" (click)="select(n)">
+                <span class="title">
+                  @if (badge(n.priority); as cls) {
+                    <span class="dot {{ cls }}" aria-hidden="true"></span>
+                  }
+                  {{ n.title }}
+                </span>
+                <span class="message">{{ n.message }}</span>
+                <small class="muted">{{ n.createdAt | date: 'dd/MM HH:mm' }}</small>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    } @else if (!error()) {
+      <p class="empty" role="status">A carregar…</p>
+    }
+    <a class="see-all" routerLink="/notifications" (click)="close()">Ver todas</a>
+  </div>
+}

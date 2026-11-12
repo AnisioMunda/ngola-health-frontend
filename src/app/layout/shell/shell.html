@@ -11,6 +11,9 @@
         <strong>{{ u.fullName }}</strong>
         <small>{{ roleLabel() }} · {{ u.hospitalName ?? 'Plataforma' }}</small>
       </span>
+      @if (u.hospitalId) {
+        <app-notification-bell />
+      }
       <a class="btn btn-small btn-secondary" routerLink="/change-password">Alterar senha</a>
       <button class="btn btn-small btn-secondary" type="button" (click)="logout()">Sair</button>
     </div>

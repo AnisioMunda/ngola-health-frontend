@@ -4,11 +4,12 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ROLE_LABELS } from '../../core/auth/roles';
 import { areasFor } from '../../core/navigation/navigation';
+import { NotificationBell } from '../../features/notifications/notification-bell/notification-bell';
 
 /** Estrutura das páginas autenticadas: cabeçalho, menu conforme o perfil e conta. */
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, NotificationBell],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
