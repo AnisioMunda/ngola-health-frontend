@@ -1,0 +1,210 @@
+<section class="page">
+  <a class="btn-link back" routerLink="/pharmacy">← Farmácia</a>
+
+  @if (medication(); as m) {
+    <header class="page-header">
+      <div>
+        <h1>{{ m.name }}{{ m.strength ? ' ' + m.strength : '' }}</h1>
+        <p class="muted">
+          {{ m.genericName ? m.genericName + ' · ' : '' }}{{ forms[m.dosageForm] }} · unidade:
+          {{ m.dispensingUnit }} ·
+          {{ m.requiresPrescription ? 'exige receita' : 'venda livre' }}
+          @if (!m.active) {
+            · <span class="badge">Desactivado</span>
+          }
+        </p>
+        <p class="stock">
+          <strong>{{ m.stockAvailable }}</strong> {{ m.dispensingUnit }} utilizáveis
+          @if (m.lowStock) {
+            <span class="badge badge-warning">Abaixo do mínimo ({{ m.minStockLevel }})</span>
+          }
+        </p>
+      </div>
+      <div class="header-actions">
+        @if (isPharmacist() && m.active) {
+          <a
+            class="btn btn-secondary"
+            routerLink="/pharmacy/receive"
+            [queryParams]="{ medicationId: m.id }"
+            >Receber lote</a
+          >
+        }
+        @if (canManage()) {
+          <button
+            class="btn btn-secondary"
+            type="button"
+            [disabled]="busy()"
+            (click)="toggleActive()"
+          >
+            {{ m.active ? 'Desactivar' : 'Reactivar' }}
+          </button>
+          <a class="btn btn-primary" [routerLink]="['/pharmacy/medications', m.id, 'edit']"
+            >Editar</a
+          >
+        }
+      </div>
+    </header>
+  }
+
+  @if (error(); as message) {
+    <div class="alert alert-error" role="alert">{{ message }}</div>
+  }
+
+  <div class="card table-card">
+    <h2 class="table-title">Lotes</h2>
+    @if (batches().length === 0) {
+      <p class="empty">Sem lotes recebidos.</p>
+    } @else {
+      <div class="table-scroll">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Lote</th>
+              <th scope="col">Validade</th>
+              <th scope="col">Saldo</th>
+              <th scope="col">Custo unit.</th>
+              <th scope="col">Recebido</th>
+              @if (isPharmacist()) {
+                <th scope="col"><span class="visually-hidden">Acções</span></th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (b of batches(); track b.id) {
+              <tr
+                [class.inactive]="b.quantityAvailable === 0"
+                [class.expired]="b.expired && b.quantityAvailable > 0"
+              >
+                <td>
+                  <code>{{ b.batchNumber }}</code>
+                </td>
+                <td>
+                  {{ b.expiryDate | date: 'dd/MM/yyyy' }}
+                  <span class="subtext">{{
+                    b.expired ? 'Expirado' : b.daysToExpiry + ' dias'
+                  }}</span>
+                </td>
+                <td>{{ b.quantityAvailable }} / {{ b.quantityReceived }}</td>
+                <td>
+                  {{
+                    b.unitCost !== null ? (b.unitCost | currency: 'AOA' : 'symbol' : '1.2-2') : '—'
+                  }}
+                </td>
+                <td>
+                  {{ b.receivedAt | date: 'dd/MM/yyyy' }}
+                  <span class="subtext"
+                    >{{ b.supplier ?? ''
+                    }}{{ b.receivedByName ? ' · ' + b.receivedByName : '' }}</span
+                  >
+                </td>
+                @if (isPharmacist()) {
+                  <td class="actions">
+                    @if (b.expired && b.quantityAvailable > 0) {
+                      <button
+                        class="btn btn-small btn-danger"
+                        type="button"
+                        [disabled]="busy()"
+                        (click)="writeOff(b)"
+                      >
+                        Abater expirado
+                      </button>
+                    } @else if (!b.expired) {
+                      <button
+                        class="btn btn-small btn-secondary"
+                        type="button"
+                        (click)="startAdjust(b)"
+                      >
+                        Acerto
+                      </button>
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    @if (adjusting(); as b) {
+      <div class="adjust">
+        <h3>Acerto do lote {{ b.batchNumber }} (saldo {{ b.quantityAvailable }})</h3>
+        <div class="grid">
+          <label class="field span-2">
+            <span>Tipo</span>
+            <select [(ngModel)]="adjustKind" name="adjustKind">
+              @for (k of adjustmentKinds; track k[0]) {
+                <option [value]="k[0]">{{ k[1] }}</option>
+              }
+            </select>
+          </label>
+          <label class="field">
+            <span>Quantidade</span>
+            <input type="number" min="1" [(ngModel)]="adjustQuantity" name="adjustQuantity" />
+          </label>
+          <label class="field span-2">
+            <span>Motivo *</span>
+            <input [(ngModel)]="adjustReason" name="adjustReason" maxlength="500" />
+          </label>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-secondary" type="button" (click)="adjusting.set(null)">
+            Cancelar
+          </button>
+          <button class="btn btn-primary" type="button" [disabled]="busy()" (click)="saveAdjust()">
+            Registar acerto
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="card table-card movements">
+    <h2 class="table-title">Movimentos</h2>
+    @if (movements(); as page) {
+      @if (page.content.length === 0) {
+        <p class="empty">Sem movimentos.</p>
+      } @else {
+        <div class="table-scroll">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Data</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Lote</th>
+                <th scope="col">Quantidade</th>
+                <th scope="col">Saldo do lote</th>
+                <th scope="col">Por / motivo</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (mv of page.content; track mv.id) {
+                <tr>
+                  <td class="nowrap">{{ mv.performedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+                  <td>{{ movementLabels[mv.type] }}</td>
+                  <td>
+                    <code>{{ mv.batchNumber }}</code>
+                  </td>
+                  <td [class.out]="mv.quantity < 0">
+                    {{ mv.quantity > 0 ? '+' : '' }}{{ mv.quantity }}
+                  </td>
+                  <td>{{ mv.balanceAfter }}</td>
+                  <td>
+                    {{ mv.performedByName ?? '—' }}
+                    @if (mv.reason) {
+                      <span class="subtext">{{ mv.reason }}</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (page.totalElements > page.content.length) {
+          <p class="muted total">
+            A mostrar os {{ page.content.length }} mais recentes de {{ page.totalElements }}.
+          </p>
+        }
+      }
+    }
+  </div>
+</section>

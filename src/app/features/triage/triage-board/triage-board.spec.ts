@@ -44,28 +44,26 @@ function t(partial: Partial<Triage>): Triage {
 
 function render(roles: Role[]) {
   const service = {
-    queue: vi
-      .fn()
-      .mockReturnValue(
-        of([
-          t({
-            id: 'a',
-            queueNumber: 2,
-            priority: 'RED',
-            overdue: true,
-            waitingMinutes: 3,
-            targetMinutes: 0,
-          }),
-          t({
-            id: 'b',
-            queueNumber: 1,
-            priority: 'GREEN',
-            identified: true,
-            displayName: 'Ana Silva',
-          }),
-          t({ id: 'c', queueNumber: 3, status: 'IN_PROGRESS', calledAt: '2026-11-12T08:10:00Z' }),
-        ]),
-      ),
+    queue: vi.fn().mockReturnValue(
+      of([
+        t({
+          id: 'a',
+          queueNumber: 2,
+          priority: 'RED',
+          overdue: true,
+          waitingMinutes: 3,
+          targetMinutes: 0,
+        }),
+        t({
+          id: 'b',
+          queueNumber: 1,
+          priority: 'GREEN',
+          identified: true,
+          displayName: 'Ana Silva',
+        }),
+        t({ id: 'c', queueNumber: 3, status: 'IN_PROGRESS', calledAt: '2026-11-12T08:10:00Z' }),
+      ]),
+    ),
     stats: vi.fn().mockReturnValue(
       of({
         day: '2026-11-12',

@@ -1,0 +1,125 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Farmácia</h1>
+      <p class="muted">Catálogo de medicamentos e stock utilizável (sem lotes expirados).</p>
+    </div>
+    <div class="header-actions">
+      @if (isPharmacist()) {
+        <a class="btn btn-secondary" routerLink="dispense">Dispensa ao balcão</a>
+        <a class="btn btn-secondary" routerLink="receive">Receber lote</a>
+      }
+      @if (canManage()) {
+        <a class="btn btn-primary" routerLink="medications/new">Novo medicamento</a>
+      }
+    </div>
+  </header>
+
+  @if (alerts(); as a) {
+    @if (a.lowStock.length + a.expiringSoon.length + a.expired.length > 0) {
+      <a class="alert alert-warning alerts-link" routerLink="alerts">
+        <strong>Alertas de stock:</strong>
+        {{ a.lowStock.length }} abaixo do mínimo · {{ a.expiringSoon.length }} lote(s) a expirar em
+        90 dias · {{ a.expired.length }} lote(s) expirado(s) com saldo — ver detalhes
+      </a>
+    }
+  }
+
+  <form class="filters card" role="search" (ngSubmit)="applyFilters()">
+    <label class="field grow">
+      <span>Pesquisar</span>
+      <input type="search" name="search" [(ngModel)]="searchTerm" placeholder="Nome ou DCI" />
+    </label>
+    <label class="field">
+      <span>Estado</span>
+      <select name="status" [(ngModel)]="status" (ngModelChange)="applyFilters()">
+        <option value="active">Activos</option>
+        <option value="inactive">Desactivados</option>
+        <option value="all">Todos</option>
+      </select>
+    </label>
+    <button class="btn btn-secondary" type="submit">Pesquisar</button>
+  </form>
+
+  @if (error(); as message) {
+    <div class="alert alert-error" role="alert">{{ message }}</div>
+  }
+
+  <div class="card table-card" [attr.aria-busy]="loading()">
+    @if (loading() && !result()) {
+      <p class="empty" role="status">A carregar catálogo…</p>
+    } @else if (result(); as page) {
+      @if (page.content.length === 0) {
+        <p class="empty">Nenhum medicamento encontrado.</p>
+      } @else {
+        <div class="table-scroll">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Medicamento</th>
+                <th scope="col">Forma</th>
+                <th scope="col">Stock</th>
+                <th scope="col">Próxima validade</th>
+                <th scope="col"><span class="visually-hidden">Acções</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of page.content; track m.id) {
+                <tr [class.inactive]="!m.active">
+                  <td>
+                    <strong>{{ m.name }}{{ m.strength ? ' ' + m.strength : '' }}</strong>
+                    <span class="subtext">
+                      {{ m.genericName ?? '' }}
+                      @if (m.requiresPrescription) {
+                        <span class="badge">Receita</span>
+                      } @else {
+                        <span class="badge badge-success">Venda livre</span>
+                      }
+                    </span>
+                  </td>
+                  <td>{{ forms[m.dosageForm] }}</td>
+                  <td>
+                    {{ m.stockAvailable }} {{ m.dispensingUnit }}
+                    @if (m.lowStock) {
+                      <span class="badge badge-warning"
+                        >Abaixo do mínimo ({{ m.minStockLevel }})</span
+                      >
+                    }
+                  </td>
+                  <td>{{ m.nextExpiry ? (m.nextExpiry | date: 'dd/MM/yyyy') : '—' }}</td>
+                  <td class="actions">
+                    <a class="btn btn-small btn-secondary" [routerLink]="['medications', m.id]"
+                      >Abrir</a
+                    >
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (page.totalPages > 1) {
+          <nav class="pagination" aria-label="Paginação">
+            <button
+              class="btn btn-small btn-secondary"
+              type="button"
+              [disabled]="page.page === 0 || loading()"
+              (click)="goToPage(page.page - 1)"
+            >
+              Anterior
+            </button>
+            <span>Página {{ page.page + 1 }} de {{ page.totalPages }}</span>
+            <button
+              class="btn btn-small btn-secondary"
+              type="button"
+              [disabled]="page.page + 1 >= page.totalPages || loading()"
+              (click)="goToPage(page.page + 1)"
+            >
+              Seguinte
+            </button>
+          </nav>
+        }
+        <p class="muted total">{{ page.totalElements }} medicamento(s).</p>
+      }
+    }
+  </div>
+</section>

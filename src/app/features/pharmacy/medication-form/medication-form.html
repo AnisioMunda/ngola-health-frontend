@@ -1,0 +1,69 @@
+<section class="page narrow">
+  <header class="page-header">
+    <div>
+      <a class="btn-link back" routerLink="/pharmacy">← Farmácia</a>
+      <h1>{{ isEdit() ? 'Editar medicamento' : 'Novo medicamento' }}</h1>
+    </div>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <fieldset class="card">
+      <legend>Identificação</legend>
+      <div class="grid">
+        <label class="field span-2">
+          <span>Nome comercial *</span>
+          <input formControlName="name" maxlength="200" />
+        </label>
+        <label class="field span-2">
+          <span>DCI (denominação comum internacional)</span>
+          <input formControlName="genericName" maxlength="200" />
+        </label>
+        <label class="field">
+          <span>Forma farmacêutica *</span>
+          <select formControlName="dosageForm">
+            @for (f of forms; track f[0]) {
+              <option [value]="f[0]">{{ f[1] }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          <span>Dosagem</span>
+          <input formControlName="strength" maxlength="50" placeholder="500 mg" />
+        </label>
+        <label class="field">
+          <span>Unidade de dispensa *</span>
+          <input
+            formControlName="dispensingUnit"
+            maxlength="30"
+            placeholder="comprimido, frasco…"
+          />
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset class="card">
+      <legend>Regras</legend>
+      <div class="grid">
+        <label class="check-inline">
+          <input type="checkbox" formControlName="requiresPrescription" />
+          Exige receita (só é dispensado a partir de prescrição)
+        </label>
+        <label class="field">
+          <span>Stock mínimo (alerta)</span>
+          <input formControlName="minStockLevel" type="number" min="0" />
+        </label>
+      </div>
+    </fieldset>
+
+    @if (error(); as message) {
+      <div class="alert alert-error" role="alert">{{ message }}</div>
+    }
+
+    <div class="form-actions">
+      <a class="btn btn-secondary" routerLink="/pharmacy">Cancelar</a>
+      <button class="btn btn-primary" type="submit" [disabled]="saving()">
+        {{ saving() ? 'A guardar…' : isEdit() ? 'Guardar alterações' : 'Adicionar ao catálogo' }}
+      </button>
+    </div>
+  </form>
+</section>

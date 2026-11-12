@@ -41,6 +41,10 @@ function render(roles: Role[], hospitalName: string | null) {
 }
 
 describe('Shell', () => {
+  it('o farmacêutico só vê o início e a farmácia', () => {
+    expect(render(['PHARMACIST'], 'HCL').links).toEqual(['Início', 'Farmácia']);
+  });
+
   it('o administrador da plataforma vê hospitais e utilizadores', () => {
     const { links, account } = render(['SUPER_ADMIN'], null);
     expect(links).toEqual(['Início', 'Hospitais', 'Utilizadores', 'Auditoria']);
@@ -54,6 +58,7 @@ describe('Shell', () => {
       'Pacientes',
       'Triagem',
       'Episódios',
+      'Farmácia',
       'Utilizadores',
       'Auditoria',
     ]);
@@ -66,6 +71,7 @@ describe('Shell', () => {
       'Pacientes',
       'Triagem',
       'Episódios',
+      'Farmácia',
     ]);
   });
 });

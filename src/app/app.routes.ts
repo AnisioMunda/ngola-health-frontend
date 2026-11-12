@@ -63,6 +63,13 @@ export const routes: Routes = [
           import('./features/episodes/episodes.routes').then((m) => m.EPISODE_ROUTES),
       },
       {
+        path: 'pharmacy',
+        canActivate: [roleGuard],
+        data: { roles: ACCESS.pharmacyRead },
+        loadChildren: () =>
+          import('./features/pharmacy/pharmacy.routes').then((m) => m.PHARMACY_ROUTES),
+      },
+      {
         path: 'audit',
         title: 'Auditoria · Ngola Health',
         canActivate: [roleGuard],

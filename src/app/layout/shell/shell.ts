@@ -15,6 +15,7 @@ const NAV: NavItem[] = [
   { label: 'Pacientes', path: '/patients', roles: ACCESS.patientsRead },
   { label: 'Triagem', path: '/triage', roles: ACCESS.patientsRead },
   { label: 'Episódios', path: '/episodes', roles: ACCESS.patientsRead },
+  { label: 'Farmácia', path: '/pharmacy', roles: ACCESS.pharmacyRead },
   { label: 'Hospitais', path: '/hospitals', roles: ACCESS.hospitals },
   { label: 'Utilizadores', path: '/users', roles: ACCESS.usersRead },
   { label: 'Auditoria', path: '/audit', roles: ACCESS.audit },

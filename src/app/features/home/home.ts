@@ -32,6 +32,12 @@ import { ACCESS } from '../../core/auth/roles';
             <span class="muted">Lista de trabalho: consultas, urgências e exames.</span>
           </a>
         }
+        @if (canPharmacy()) {
+          <a class="card tile" routerLink="/pharmacy">
+            <strong>Farmácia</strong>
+            <span class="muted">Catálogo, stock, lotes e dispensa.</span>
+          </a>
+        }
         @if (canHospitals()) {
           <a class="card tile" routerLink="/hospitals">
             <strong>Hospitais</strong>
@@ -50,7 +56,7 @@ import { ACCESS } from '../../core/auth/roles';
             <span class="muted">Quem fez o quê, e quando.</span>
           </a>
         }
-        @if (!canPatients() && !canHospitals() && !canUsers()) {
+        @if (!canPatients() && !canPharmacy() && !canHospitals() && !canUsers()) {
           <p class="card muted">Os módulos do seu perfil ficarão disponíveis aqui.</p>
         }
       </div>
@@ -79,6 +85,7 @@ export class Home {
   private readonly auth = inject(AuthService);
   protected readonly user = this.auth.user;
   protected readonly canPatients = computed(() => this.auth.hasAnyRole(ACCESS.patientsRead));
+  protected readonly canPharmacy = computed(() => this.auth.hasAnyRole(ACCESS.pharmacyRead));
   protected readonly canHospitals = computed(() => this.auth.hasAnyRole(ACCESS.hospitals));
   protected readonly canUsers = computed(() => this.auth.hasAnyRole(ACCESS.usersRead));
   protected readonly canAudit = computed(() => this.auth.hasAnyRole(ACCESS.audit));
