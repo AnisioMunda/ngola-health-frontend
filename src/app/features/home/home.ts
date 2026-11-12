@@ -23,6 +23,10 @@ import { ACCESS } from '../../core/auth/roles';
           </a>
         }
         @if (canPatients()) {
+          <a class="card tile" routerLink="/triage">
+            <strong>Triagem</strong>
+            <span class="muted">Fila da urgência por prioridade (Manchester).</span>
+          </a>
           <a class="card tile" routerLink="/episodes">
             <strong>Episódios</strong>
             <span class="muted">Lista de trabalho: consultas, urgências e exames.</span>

@@ -16,27 +16,7 @@
         }
       </p>
     } @else {
-      <form class="password-row" (ngSubmit)="searchPatients()">
-        <label class="field grow">
-          <span>Pesquisar paciente</span>
-          <input
-            name="patientSearch"
-            [(ngModel)]="patientSearch"
-            placeholder="Nome, processo, BI ou telefone"
-          />
-        </label>
-        <button class="btn btn-secondary" type="submit">Pesquisar</button>
-      </form>
-      @if (candidates().length > 0) {
-        <ul class="candidates">
-          @for (c of candidates(); track c.id) {
-            <li>
-              <button class="btn-link" type="button" (click)="choose(c)">{{ c.fullName }}</button>
-              — processo {{ c.recordNumber }}, {{ c.age }} anos
-            </li>
-          }
-        </ul>
-      }
+      <app-patient-picker (picked)="choose($event)" />
     }
   </fieldset>
 

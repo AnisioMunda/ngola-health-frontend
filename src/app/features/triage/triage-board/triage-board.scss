@@ -1,0 +1,54 @@
+.header-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-left-width: 6px;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+
+  strong {
+    font-size: 1.5rem;
+  }
+
+  span {
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+
+  &.alarm {
+    border-color: var(--color-danger);
+    background: var(--color-danger-soft);
+  }
+}
+
+.table-title {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  font-size: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.in-progress {
+  margin-top: var(--space-4);
+}
+
+.ticket {
+  font-size: 1.25rem;
+}
+
+tr.overdue td {
+  background: var(--color-danger-soft);
+}

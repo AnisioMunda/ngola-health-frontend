@@ -1,0 +1,197 @@
+<section class="page narrow">
+  <a class="btn-link back" routerLink="/triage">← Triagem</a>
+
+  @if (loading()) {
+    <p class="card muted" role="status">A abrir triagem…</p>
+  } @else if (record(); as t) {
+    <header class="page-header">
+      <div>
+        <h1>Senha {{ t.queueNumber }} · {{ t.displayName }}</h1>
+        <p class="muted">
+          @if (t.identified) {
+            <a [routerLink]="['/patients', t.patientId]">Ficha do paciente</a> · processo
+            <code>{{ t.patientRecordNumber }}</code>
+          } @else {
+            <span class="badge badge-warning">Provisório</span>
+            {{ t.tempAge !== null ? '~' + t.tempAge + ' anos' : '' }}
+            {{ t.tempGender ? genderLabels[t.tempGender] : '' }}
+          }
+        </p>
+        <span class="prio prio-{{ t.priority }}">{{ priorityLabels[t.priority] }}</span>
+        <span class="badge">{{ statusLabels[t.status] }}</span>
+        @if (t.overdue) {
+          <span class="badge badge-danger">Fora do tempo-alvo</span>
+        }
+      </div>
+      <div class="header-actions">
+        @if (canAudit()) {
+          <a
+            class="btn btn-link"
+            routerLink="/audit"
+            [queryParams]="{ entityType: 'TRIAGE', entityId: t.id }"
+            >Ver histórico</a
+          >
+        }
+        @if (canLeave()) {
+          <button class="btn btn-secondary" type="button" [disabled]="busy()" (click)="left()">
+            Saiu sem ser atendido
+          </button>
+        }
+        @if (canCall()) {
+          <button class="btn btn-primary" type="button" [disabled]="busy()" (click)="call()">
+            Chamar
+          </button>
+        }
+      </div>
+    </header>
+
+    @if (error(); as message) {
+      <div class="alert alert-error" role="alert">{{ message }}</div>
+    }
+
+    @if (t.episodeId) {
+      <div class="alert alert-success" role="status">
+        Encaminhado para episódio de urgência.
+        <a [routerLink]="['/episodes', t.episodeId]">Abrir episódio</a>
+      </div>
+    }
+
+    <div class="card">
+      <h2>Avaliação</h2>
+      <dl class="data">
+        <dt>Queixa principal</dt>
+        <dd>{{ t.chiefComplaint }}</dd>
+        <dt>Dor</dt>
+        <dd>{{ t.painScale !== null ? t.painScale + '/10' : '—' }}</dd>
+        @if (t.vitals; as v) {
+          <dt>Sinais vitais</dt>
+          <dd>
+            TA {{ v.systolicBp ?? '—' }}/{{ v.diastolicBp ?? '—' }} · FC {{ v.heartRate ?? '—' }} ·
+            FR {{ v.respiratoryRate ?? '—' }} · T {{ v.temperature ?? '—' }} °C · SpO₂
+            {{ v.oxygenSaturation ?? '—' }} %
+          </dd>
+        }
+        <dt>Notas</dt>
+        <dd class="pre">{{ t.notes ?? '—' }}</dd>
+        <dt>Triado</dt>
+        <dd>{{ t.triagedAt | date: 'dd/MM/yyyy HH:mm' }} por {{ t.triagedByName ?? '—' }}</dd>
+        <dt>Espera</dt>
+        <dd>{{ t.waitingMinutes }} min (alvo {{ t.targetMinutes }} min)</dd>
+        @if (t.calledAt) {
+          <dt>Chamado</dt>
+          <dd>{{ t.calledAt | date: 'HH:mm' }} por {{ t.calledByName ?? '—' }}</dd>
+        }
+        @if (t.closedAt) {
+          <dt>Fechado</dt>
+          <dd>{{ t.closedAt | date: 'dd/MM/yyyy HH:mm' }} por {{ t.closedByName ?? '—' }}</dd>
+        }
+      </dl>
+    </div>
+
+    @if (canRetriage() || t.priorityChanges.length > 0) {
+      <div class="card">
+        <div class="section-head">
+          <h2>Re-triagem</h2>
+          @if (canRetriage() && !retriaging()) {
+            <button
+              class="btn btn-small btn-secondary"
+              type="button"
+              (click)="retriaging.set(true)"
+            >
+              Alterar prioridade
+            </button>
+          }
+        </div>
+        @if (retriaging()) {
+          <div class="grid">
+            <label class="field">
+              <span>Nova prioridade</span>
+              <select [(ngModel)]="newPriority" name="newPriority">
+                <option value="" disabled>Seleccione…</option>
+                @for (p of priorities; track p) {
+                  @if (p !== t.priority) {
+                    <option [value]="p">{{ priorityLabels[p] }}</option>
+                  }
+                }
+              </select>
+            </label>
+            <label class="field span-2">
+              <span>Motivo *</span>
+              <input [(ngModel)]="reason" name="reason" maxlength="500" />
+            </label>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-secondary" type="button" (click)="retriaging.set(false)">
+              Cancelar
+            </button>
+            <button
+              class="btn btn-primary"
+              type="button"
+              [disabled]="busy()"
+              (click)="saveRetriage()"
+            >
+              Guardar
+            </button>
+          </div>
+        }
+        @if (t.priorityChanges.length > 0) {
+          <ul class="history">
+            @for (c of t.priorityChanges; track c.changedAt) {
+              <li>
+                {{ c.changedAt | date: 'HH:mm' }} · {{ priorityLabels[c.from] }} →
+                {{ priorityLabels[c.to] }}
+                <span class="subtext">{{ c.reason }} — {{ c.changedByName ?? '—' }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+
+    @if (canIdentify()) {
+      <div class="card">
+        <h2>Identificar doente</h2>
+        <p class="muted">
+          Associe esta triagem ao paciente registado (registe-o primeiro, se for novo).
+        </p>
+        <app-patient-picker (picked)="identify($event)" />
+      </div>
+    }
+
+    @if (canClose()) {
+      <div class="card">
+        <h2>Encaminhamento</h2>
+        @if (t.identified) {
+          <div class="grid">
+            <label class="field">
+              <span>Médico responsável</span>
+              <select [(ngModel)]="doctorId" name="doctorId">
+                <option value="">Por atribuir</option>
+                @for (d of doctors(); track d.id) {
+                  <option [value]="d.id">{{ d.fullName }}</option>
+                }
+              </select>
+            </label>
+          </div>
+        } @else {
+          <p class="muted">Identifique o doente para poder abrir o episódio.</p>
+        }
+        <div class="form-actions">
+          <button class="btn btn-secondary" type="button" [disabled]="busy()" (click)="complete()">
+            Concluir sem episódio
+          </button>
+          <button
+            class="btn btn-primary"
+            type="button"
+            [disabled]="busy() || !t.identified"
+            (click)="openEpisode()"
+          >
+            Abrir episódio de urgência
+          </button>
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="alert alert-error" role="alert">{{ error() }}</div>
+  }
+</section>

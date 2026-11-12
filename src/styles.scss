@@ -14,6 +14,12 @@
   --color-danger-soft: #fde8e8;
   --color-warning: #8a5a00;
   --color-warning-soft: #fff4d6;
+  /* Cores do protocolo de Manchester */
+  --prio-RED: #c62828;
+  --prio-ORANGE: #ef6c00;
+  --prio-YELLOW: #f9a825;
+  --prio-GREEN: #2e7d32;
+  --prio-BLUE: #1565c0;
   --radius: 6px;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -471,4 +477,39 @@ fieldset.card {
   display: flex;
   align-items: flex-end;
   gap: var(--space-3);
+}
+
+/* Prioridades de triagem (Manchester): cor + texto, nunca só cor */
+.prio {
+  display: inline-block;
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.prio-YELLOW.prio {
+  color: #1f2933;
+}
+
+@each $p in 'RED', 'ORANGE', 'YELLOW', 'GREEN', 'BLUE' {
+  .prio.prio-#{$p} {
+    background: var(--prio-#{$p});
+  }
+
+  .stat.prio-#{$p},
+  .prio-option.prio-#{$p} {
+    border-left-color: var(--prio-#{$p});
+  }
+
+  .prio-option.prio-#{$p}.selected {
+    border-color: var(--prio-#{$p});
+  }
+}
+
+.badge-danger {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
 }

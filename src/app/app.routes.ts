@@ -50,6 +50,12 @@ export const routes: Routes = [
           import('./features/patients/patients.routes').then((m) => m.PATIENT_ROUTES),
       },
       {
+        path: 'triage',
+        canActivate: [roleGuard],
+        data: { roles: ACCESS.patientsRead },
+        loadChildren: () => import('./features/triage/triage.routes').then((m) => m.TRIAGE_ROUTES),
+      },
+      {
         path: 'episodes',
         canActivate: [roleGuard],
         data: { roles: ACCESS.patientsRead },

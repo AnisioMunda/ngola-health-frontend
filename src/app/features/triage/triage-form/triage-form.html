@@ -1,0 +1,136 @@
+<section class="page narrow">
+  <header class="page-header">
+    <div>
+      <a class="btn-link back" routerLink="/triage">← Triagem</a>
+      <h1>Nova triagem</h1>
+    </div>
+  </header>
+
+  <fieldset class="card">
+    <legend>Doente</legend>
+    <div class="mode" role="radiogroup" aria-label="Identificação do doente">
+      <label class="check-inline">
+        <input
+          type="radio"
+          name="mode"
+          [checked]="mode() === 'registered'"
+          (change)="setMode('registered')"
+        />
+        Paciente registado
+      </label>
+      <label class="check-inline">
+        <input
+          type="radio"
+          name="mode"
+          [checked]="mode() === 'provisional'"
+          (change)="setMode('provisional')"
+        />
+        Provisório (identificar depois)
+      </label>
+    </div>
+    @if (mode() === 'registered') {
+      @if (patient(); as p) {
+        <p class="chosen">
+          <strong>{{ p.fullName }}</strong> · processo <code>{{ p.recordNumber }}</code> ·
+          {{ p.age }} anos
+          <button class="btn-link" type="button" (click)="patient.set(null)">Trocar</button>
+        </p>
+      } @else {
+        <app-patient-picker (picked)="patient.set($event)" />
+      }
+    }
+  </fieldset>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @if (mode() === 'provisional') {
+      <fieldset class="card">
+        <legend>Dados provisórios</legend>
+        <div class="grid">
+          <label class="field">
+            <span>Nome provisório *</span>
+            <input formControlName="tempName" maxlength="200" />
+          </label>
+          <label class="field">
+            <span>Idade aproximada</span>
+            <input formControlName="tempAge" type="number" min="0" max="130" />
+          </label>
+          <label class="field">
+            <span>Sexo</span>
+            <select formControlName="tempGender">
+              <option value="">Desconhecido</option>
+              @for (g of genders; track g[0]) {
+                <option [value]="g[0]">{{ g[1] }}</option>
+              }
+            </select>
+          </label>
+        </div>
+      </fieldset>
+    }
+
+    <fieldset class="card">
+      <legend>Prioridade *</legend>
+      <div class="priorities" role="radiogroup" aria-label="Prioridade">
+        @for (p of priorities; track p) {
+          <label
+            class="prio-option prio-{{ p }}"
+            [class.selected]="form.controls.priority.value === p"
+          >
+            <input type="radio" formControlName="priority" [value]="p" />
+            {{ priorityLabels[p] }}
+          </label>
+        }
+      </div>
+      @if (form.controls.priority.invalid && form.controls.priority.touched) {
+        <small class="field-error">Seleccione a prioridade.</small>
+      }
+    </fieldset>
+
+    <fieldset class="card">
+      <legend>Avaliação</legend>
+      <div class="grid">
+        <label class="field span-2">
+          <span>Queixa principal *</span>
+          <input formControlName="chiefComplaint" maxlength="500" />
+        </label>
+        <label class="field">
+          <span>Dor (0–10)</span>
+          <input formControlName="painScale" type="number" min="0" max="10" />
+        </label>
+        <label class="field"
+          ><span>TA sistólica</span><input formControlName="systolicBp" type="number"
+        /></label>
+        <label class="field"
+          ><span>TA diastólica</span><input formControlName="diastolicBp" type="number"
+        /></label>
+        <label class="field"
+          ><span>FC (bpm)</span><input formControlName="heartRate" type="number"
+        /></label>
+        <label class="field"
+          ><span>FR (cpm)</span><input formControlName="respiratoryRate" type="number"
+        /></label>
+        <label class="field"
+          ><span>Temperatura (°C)</span
+          ><input formControlName="temperature" type="number" step="0.1"
+        /></label>
+        <label class="field"
+          ><span>SpO₂ (%)</span><input formControlName="oxygenSaturation" type="number"
+        /></label>
+        <label class="field span-2">
+          <span>Notas</span>
+          <textarea formControlName="notes" rows="2"></textarea>
+        </label>
+      </div>
+    </fieldset>
+
+    @if (error(); as message) {
+      <div class="alert alert-error" role="alert">{{ message }}</div>
+    }
+
+    <div class="form-actions">
+      <a class="btn btn-secondary" routerLink="/triage">Cancelar</a>
+      <button class="btn btn-primary" type="submit" [disabled]="saving()">
+        {{ saving() ? 'A registar…' : 'Registar e atribuir senha' }}
+      </button>
+    </div>
+  </form>
+</section>

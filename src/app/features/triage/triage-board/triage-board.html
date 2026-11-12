@@ -1,0 +1,148 @@
+<section class="page wide">
+  <header class="page-header">
+    <div>
+      <h1>Triagem</h1>
+      <p class="muted">
+        Fila da urgência por prioridade (protocolo de Manchester).
+        @if (updatedAt(); as at) {
+          Actualizado às {{ at | date: 'HH:mm:ss' }}.
+        }
+      </p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" type="button" (click)="load()">Actualizar</button>
+      @if (canTriage()) {
+        <a class="btn btn-primary" routerLink="new">Nova triagem</a>
+      }
+    </div>
+  </header>
+
+  @if (notice(); as message) {
+    <div class="alert alert-success" role="status">{{ message }}</div>
+  }
+  @if (error(); as message) {
+    <div class="alert alert-error" role="alert">{{ message }}</div>
+  }
+
+  @if (stats(); as s) {
+    <div class="stats">
+      @for (p of priorities; track p) {
+        <div class="stat prio-{{ p }}">
+          <strong>{{ s.waitingByPriority[p] }}</strong>
+          <span>{{ priorityLabels[p] }}</span>
+        </div>
+      }
+      <div class="stat" [class.alarm]="s.overdue > 0">
+        <strong>{{ s.overdue }}</strong>
+        <span>Fora do tempo-alvo</span>
+      </div>
+      <div class="stat">
+        <strong>{{ s.averageWaitMinutesToday ?? '—' }}</strong>
+        <span>Espera média hoje (min)</span>
+      </div>
+      <div class="stat">
+        <strong>{{ s.triagedToday }}</strong>
+        <span>Triados hoje · {{ s.leftToday }} saíram</span>
+      </div>
+    </div>
+  }
+
+  <div class="card table-card" [attr.aria-busy]="loading()">
+    <h2 class="table-title">Em espera ({{ waiting().length }})</h2>
+    @if (loading() && queue().length === 0) {
+      <p class="empty" role="status">A carregar fila…</p>
+    } @else if (waiting().length === 0) {
+      <p class="empty">Ninguém em espera.</p>
+    } @else {
+      <div class="table-scroll">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Senha</th>
+              <th scope="col">Prioridade</th>
+              <th scope="col">Doente</th>
+              <th scope="col">Queixa</th>
+              <th scope="col">Espera</th>
+              <th scope="col"><span class="visually-hidden">Acções</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (t of waiting(); track t.id) {
+              <tr [class.overdue]="t.overdue">
+                <td>
+                  <strong class="ticket">{{ t.queueNumber }}</strong>
+                </td>
+                <td>
+                  <span class="prio prio-{{ t.priority }}">{{ priorityLabels[t.priority] }}</span>
+                </td>
+                <td>
+                  {{ t.displayName }}
+                  @if (!t.identified) {
+                    <span class="badge badge-warning">Provisório</span>
+                  }
+                </td>
+                <td>{{ t.chiefComplaint }}</td>
+                <td class="nowrap">
+                  {{ t.waitingMinutes }} min
+                  <span class="subtext"
+                    >alvo {{ t.targetMinutes }} min{{ t.overdue ? ' · ATRASADO' : '' }}</span
+                  >
+                </td>
+                <td class="actions">
+                  <a class="btn btn-small btn-secondary" [routerLink]="t.id">Abrir</a>
+                  @if (canTriage()) {
+                    <button
+                      class="btn btn-small btn-primary"
+                      type="button"
+                      [disabled]="busyId() === t.id"
+                      (click)="call(t)"
+                    >
+                      Chamar
+                    </button>
+                  }
+                  @if (canMarkLeft()) {
+                    <button
+                      class="btn btn-small btn-secondary"
+                      type="button"
+                      [disabled]="busyId() === t.id"
+                      (click)="markLeft(t)"
+                    >
+                      Saiu
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  @if (inProgress().length > 0) {
+    <div class="card table-card in-progress">
+      <h2 class="table-title">Em atendimento ({{ inProgress().length }})</h2>
+      <div class="table-scroll">
+        <table class="table">
+          <tbody>
+            @for (t of inProgress(); track t.id) {
+              <tr>
+                <td>
+                  <strong class="ticket">{{ t.queueNumber }}</strong>
+                </td>
+                <td>
+                  <span class="prio prio-{{ t.priority }}">{{ priorityLabels[t.priority] }}</span>
+                </td>
+                <td>{{ t.displayName }}</td>
+                <td>Chamado às {{ t.calledAt | date: 'HH:mm' }} por {{ t.calledByName ?? '—' }}</td>
+                <td class="actions">
+                  <a class="btn btn-small btn-secondary" [routerLink]="t.id">Abrir</a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</section>

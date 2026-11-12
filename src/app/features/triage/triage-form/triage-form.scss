@@ -1,0 +1,29 @@
+.mode {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.priorities {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--space-2);
+}
+
+.prio-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 2px solid var(--color-border);
+  border-left-width: 8px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 500;
+
+  &.selected {
+    border-color: currentColor;
+    background: var(--color-bg);
+  }
+}

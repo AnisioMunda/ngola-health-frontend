@@ -47,4 +47,6 @@ export const ACCESS = {
   episodesSchedule: ['ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST'],
   episodesCare: ['DOCTOR', 'NURSE'],
   episodesDoctor: ['DOCTOR'],
+  triageStaff: ['DOCTOR', 'NURSE'],
+  triageDesk: ['DOCTOR', 'NURSE', 'RECEPTIONIST'],
 } as const satisfies Record<string, readonly Role[]>;
