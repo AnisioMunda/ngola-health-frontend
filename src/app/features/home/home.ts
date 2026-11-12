@@ -22,6 +22,12 @@ import { ACCESS } from '../../core/auth/roles';
             <span class="muted">Pesquisar, registar e consultar fichas.</span>
           </a>
         }
+        @if (canPatients()) {
+          <a class="card tile" routerLink="/episodes">
+            <strong>Episódios</strong>
+            <span class="muted">Lista de trabalho: consultas, urgências e exames.</span>
+          </a>
+        }
         @if (canHospitals()) {
           <a class="card tile" routerLink="/hospitals">
             <strong>Hospitais</strong>

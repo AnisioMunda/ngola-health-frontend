@@ -44,4 +44,7 @@ export const ACCESS = {
   patientsRead: ['ADMIN', 'MANAGER', 'DOCTOR', 'NURSE', 'RECEPTIONIST'],
   patientsWrite: ['ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST'],
   patientsAdmin: ['ADMIN'],
+  episodesSchedule: ['ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST'],
+  episodesCare: ['DOCTOR', 'NURSE'],
+  episodesDoctor: ['DOCTOR'],
 } as const satisfies Record<string, readonly Role[]>;

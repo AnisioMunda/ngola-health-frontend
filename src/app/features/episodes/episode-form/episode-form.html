@@ -1,0 +1,91 @@
+<section class="page narrow">
+  <header class="page-header">
+    <div>
+      <a class="btn-link back" routerLink="/episodes">← Episódios</a>
+      <h1>Novo episódio</h1>
+    </div>
+  </header>
+
+  <fieldset class="card">
+    <legend>Paciente</legend>
+    @if (patient(); as p) {
+      <p class="chosen">
+        <strong>{{ p.fullName }}</strong> · processo <code>{{ p.recordNumber }}</code>
+        @if (!patientId()) {
+          <button class="btn-link" type="button" (click)="clearPatient()">Trocar</button>
+        }
+      </p>
+    } @else {
+      <form class="password-row" (ngSubmit)="searchPatients()">
+        <label class="field grow">
+          <span>Pesquisar paciente</span>
+          <input
+            name="patientSearch"
+            [(ngModel)]="patientSearch"
+            placeholder="Nome, processo, BI ou telefone"
+          />
+        </label>
+        <button class="btn btn-secondary" type="submit">Pesquisar</button>
+      </form>
+      @if (candidates().length > 0) {
+        <ul class="candidates">
+          @for (c of candidates(); track c.id) {
+            <li>
+              <button class="btn-link" type="button" (click)="choose(c)">{{ c.fullName }}</button>
+              — processo {{ c.recordNumber }}, {{ c.age }} anos
+            </li>
+          }
+        </ul>
+      }
+    }
+  </fieldset>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <fieldset class="card">
+      <legend>Episódio</legend>
+      <div class="grid">
+        <label class="field">
+          <span>Tipo *</span>
+          <select formControlName="type">
+            @for (t of types; track t[0]) {
+              <option [value]="t[0]">{{ t[1] }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          <span>Data e hora *</span>
+          <input formControlName="scheduledAt" type="datetime-local" />
+        </label>
+        <label class="field">
+          <span>Médico responsável</span>
+          <select formControlName="doctorId">
+            <option value="">Por atribuir</option>
+            @for (d of doctors(); track d.id) {
+              <option [value]="d.id">
+                {{ d.fullName }}{{ d.specialty ? ' — ' + d.specialty : '' }}
+              </option>
+            }
+          </select>
+        </label>
+        <label class="field span-2">
+          <span>Motivo / queixa principal *</span>
+          <input formControlName="reason" maxlength="500" />
+          @if (form.controls.reason.invalid && form.controls.reason.touched) {
+            <small class="field-error">Indique o motivo.</small>
+          }
+        </label>
+      </div>
+    </fieldset>
+
+    @if (error(); as message) {
+      <div class="alert alert-error" role="alert">{{ message }}</div>
+    }
+
+    <div class="form-actions">
+      <a class="btn btn-secondary" routerLink="/episodes">Cancelar</a>
+      <button class="btn btn-primary" type="submit" [disabled]="saving()">
+        {{ saving() ? 'A abrir…' : 'Abrir episódio' }}
+      </button>
+    </div>
+  </form>
+</section>

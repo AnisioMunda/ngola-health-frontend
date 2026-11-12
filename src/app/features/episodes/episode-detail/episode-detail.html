@@ -1,0 +1,221 @@
+<section class="page narrow">
+  <a class="btn-link back" routerLink="/episodes">← Episódios</a>
+
+  @if (loading()) {
+    <p class="card muted" role="status">A abrir episódio…</p>
+  } @else if (episode(); as e) {
+    <header class="page-header">
+      <div>
+        <h1>{{ typeLabels[e.type] }} · {{ e.scheduledAt | date: 'dd/MM/yyyy HH:mm' }}</h1>
+        <p class="muted">
+          <a [routerLink]="['/patients', e.patientId]">{{ e.patientName }}</a> · processo
+          <code>{{ e.patientRecordNumber }}</code>
+        </p>
+        <span class="badge" [class]="'status-' + e.status">{{ statusLabels[e.status] }}</span>
+      </div>
+      <div class="header-actions">
+        @if (canAudit()) {
+          <a
+            class="btn btn-link"
+            routerLink="/audit"
+            [queryParams]="{ entityType: 'EPISODE', entityId: e.id }"
+            >Ver histórico</a
+          >
+        }
+        @if (canCancel()) {
+          <button class="btn btn-danger" type="button" [disabled]="busy()" (click)="cancel()">
+            Cancelar episódio
+          </button>
+        }
+        @if (canStart()) {
+          <button class="btn btn-primary" type="button" [disabled]="busy()" (click)="start()">
+            Iniciar
+          </button>
+        }
+        @if (canComplete()) {
+          <button class="btn btn-primary" type="button" [disabled]="busy()" (click)="complete()">
+            Concluir
+          </button>
+        }
+      </div>
+    </header>
+
+    @if (error(); as message) {
+      <div class="alert alert-error" role="alert">{{ message }}</div>
+    }
+
+    <div class="card">
+      <h2>Dados do episódio</h2>
+      <dl class="data">
+        <dt>Motivo</dt>
+        <dd>{{ e.reason }}</dd>
+        <dt>Médico responsável</dt>
+        <dd>
+          @if (canAssignDoctor() && doctors().length > 0) {
+            <select
+              [value]="e.doctorId ?? ''"
+              (change)="assignDoctor($any($event.target).value)"
+              [disabled]="busy()"
+              aria-label="Médico responsável"
+            >
+              <option value="">Por atribuir</option>
+              @for (d of doctors(); track d.id) {
+                <option [value]="d.id">{{ d.fullName }}</option>
+              }
+            </select>
+          } @else {
+            {{ e.doctorName ?? 'Por atribuir' }}
+          }
+        </dd>
+        @if (e.startedAt) {
+          <dt>Iniciado</dt>
+          <dd>{{ e.startedAt | date: 'dd/MM/yyyy HH:mm' }} por {{ e.startedByName ?? '—' }}</dd>
+        }
+        @if (e.completedAt) {
+          <dt>Concluído</dt>
+          <dd>{{ e.completedAt | date: 'dd/MM/yyyy HH:mm' }} por {{ e.completedByName ?? '—' }}</dd>
+        }
+        @if (e.cancelledAt) {
+          <dt>Cancelado</dt>
+          <dd>
+            {{ e.cancelledAt | date: 'dd/MM/yyyy HH:mm' }} por {{ e.cancelledByName ?? '—' }}
+            <span class="subtext">Motivo: {{ e.cancellationReason }}</span>
+          </dd>
+        }
+      </dl>
+    </div>
+
+    <div class="card">
+      <div class="section-head">
+        <h2>Sinais vitais</h2>
+        @if (canEditVitals() && editing() !== 'vitals') {
+          <button class="btn btn-small btn-secondary" type="button" (click)="editVitals()">
+            {{ e.vitals ? 'Actualizar' : 'Registar' }}
+          </button>
+        }
+      </div>
+      @if (editing() === 'vitals') {
+        <form [formGroup]="vitalsForm" (ngSubmit)="saveVitals()" class="vitals-form">
+          <label class="field"
+            ><span>TA sistólica (mmHg)</span><input type="number" formControlName="systolicBp"
+          /></label>
+          <label class="field"
+            ><span>TA diastólica (mmHg)</span><input type="number" formControlName="diastolicBp"
+          /></label>
+          <label class="field"
+            ><span>FC (bpm)</span><input type="number" formControlName="heartRate"
+          /></label>
+          <label class="field"
+            ><span>FR (cpm)</span><input type="number" formControlName="respiratoryRate"
+          /></label>
+          <label class="field"
+            ><span>Temperatura (°C)</span
+            ><input type="number" step="0.1" formControlName="temperature"
+          /></label>
+          <label class="field"
+            ><span>SpO₂ (%)</span><input type="number" formControlName="oxygenSaturation"
+          /></label>
+          <label class="field"
+            ><span>Peso (kg)</span><input type="number" step="0.01" formControlName="weightKg"
+          /></label>
+          <label class="field"
+            ><span>Altura (cm)</span><input type="number" step="0.1" formControlName="heightCm"
+          /></label>
+          @if (vitalsForm.invalid && vitalsForm.touched) {
+            <p class="field-error span-all">Há valores fora dos limites plausíveis.</p>
+          }
+          <div class="form-actions span-all">
+            <button class="btn btn-secondary" type="button" (click)="editing.set(null)">
+              Cancelar
+            </button>
+            <button class="btn btn-primary" type="submit" [disabled]="busy()">Guardar</button>
+          </div>
+        </form>
+      } @else if (e.vitals; as v) {
+        <dl class="vitals">
+          <div>
+            <dt>TA</dt>
+            <dd>{{ v.systolicBp ?? '—' }}/{{ v.diastolicBp ?? '—' }} mmHg</dd>
+          </div>
+          <div>
+            <dt>FC</dt>
+            <dd>{{ v.heartRate ?? '—' }} bpm</dd>
+          </div>
+          <div>
+            <dt>FR</dt>
+            <dd>{{ v.respiratoryRate ?? '—' }} cpm</dd>
+          </div>
+          <div>
+            <dt>Temp.</dt>
+            <dd>{{ v.temperature ?? '—' }} °C</dd>
+          </div>
+          <div>
+            <dt>SpO₂</dt>
+            <dd>{{ v.oxygenSaturation ?? '—' }} %</dd>
+          </div>
+          <div>
+            <dt>Peso</dt>
+            <dd>{{ v.weightKg ?? '—' }} kg</dd>
+          </div>
+          <div>
+            <dt>Altura</dt>
+            <dd>{{ v.heightCm ?? '—' }} cm</dd>
+          </div>
+          @if (bmi(); as imc) {
+            <div>
+              <dt>IMC</dt>
+              <dd>{{ imc | number: '1.1-1' }}</dd>
+            </div>
+          }
+        </dl>
+        <p class="muted small">
+          Registados {{ v.recordedAt | date: 'dd/MM/yyyy HH:mm' }} por {{ v.recordedByName ?? '—' }}
+        </p>
+      } @else {
+        <p class="muted">Sem sinais vitais registados.</p>
+      }
+    </div>
+
+    <div class="card">
+      <div class="section-head">
+        <h2>Informação clínica</h2>
+        @if (canEditNotes() && editing() !== 'notes') {
+          <button class="btn btn-small btn-secondary" type="button" (click)="editNotes()">
+            Editar
+          </button>
+        }
+      </div>
+      @if (editing() === 'notes') {
+        <form [formGroup]="notesForm" (ngSubmit)="saveNotes()">
+          <label class="field"
+            ><span>Anamnese</span><textarea formControlName="symptoms" rows="4"></textarea>
+          </label>
+          <label class="field"
+            ><span>Diagnóstico</span><textarea formControlName="diagnosis" rows="2"></textarea>
+          </label>
+          <label class="field"
+            ><span>Exame objectivo, plano e notas</span
+            ><textarea formControlName="clinicalNotes" rows="4"></textarea>
+          </label>
+          <div class="form-actions">
+            <button class="btn btn-secondary" type="button" (click)="editing.set(null)">
+              Cancelar
+            </button>
+            <button class="btn btn-primary" type="submit" [disabled]="busy()">Guardar</button>
+          </div>
+        </form>
+      } @else {
+        <dl class="data">
+          <dt>Anamnese</dt>
+          <dd class="pre">{{ e.symptoms ?? '—' }}</dd>
+          <dt>Diagnóstico</dt>
+          <dd class="pre">{{ e.diagnosis ?? '—' }}</dd>
+          <dt>Notas</dt>
+          <dd class="pre">{{ e.clinicalNotes ?? '—' }}</dd>
+        </dl>
+      }
+    </div>
+  } @else {
+    <div class="alert alert-error" role="alert">{{ error() }}</div>
+  }
+</section>

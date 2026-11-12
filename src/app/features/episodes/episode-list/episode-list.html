@@ -1,0 +1,116 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Episódios</h1>
+      <p class="muted">Consultas, urgências e exames do hospital.</p>
+    </div>
+    @if (canSchedule()) {
+      <a class="btn btn-primary" routerLink="new">Novo episódio</a>
+    }
+  </header>
+
+  <form class="filters card" (ngSubmit)="applyFilters()">
+    <label class="field">
+      <span>Mostrar</span>
+      <select name="view" [(ngModel)]="view" (ngModelChange)="applyFilters()">
+        <option value="open">Abertos (agendados e em curso)</option>
+        <option value="COMPLETED">Concluídos</option>
+        <option value="CANCELLED">Cancelados</option>
+        <option value="all">Todos</option>
+      </select>
+    </label>
+    <label class="field">
+      <span>Dia</span>
+      <input type="date" name="day" [(ngModel)]="day" (ngModelChange)="applyFilters()" />
+    </label>
+    @if (isDoctor()) {
+      <label class="check-inline">
+        <input
+          type="checkbox"
+          name="mine"
+          [(ngModel)]="onlyMine"
+          (ngModelChange)="applyFilters()"
+        />
+        Só os meus
+      </label>
+    }
+  </form>
+
+  @if (error(); as message) {
+    <div class="alert alert-error" role="alert">
+      {{ message }}
+      <button class="btn-link" type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  }
+
+  <div class="card table-card" [attr.aria-busy]="loading()">
+    @if (loading() && !result()) {
+      <p class="empty" role="status">A carregar episódios…</p>
+    } @else if (result(); as page) {
+      @if (page.content.length === 0) {
+        <p class="empty">Nenhum episódio encontrado.</p>
+      } @else {
+        <div class="table-scroll">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Data e hora</th>
+                <th scope="col">Paciente</th>
+                <th scope="col">Tipo e motivo</th>
+                <th scope="col">Médico</th>
+                <th scope="col">Estado</th>
+                <th scope="col"><span class="visually-hidden">Acções</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (e of page.content; track e.id) {
+                <tr>
+                  <td class="nowrap">{{ e.scheduledAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+                  <td>
+                    <strong>{{ e.patientName }}</strong>
+                    <span class="subtext">Processo {{ e.patientRecordNumber }}</span>
+                  </td>
+                  <td>
+                    {{ typeLabels[e.type] }}
+                    <span class="subtext">{{ e.reason }}</span>
+                  </td>
+                  <td>{{ e.doctorName ?? '—' }}</td>
+                  <td>
+                    <span class="badge" [class]="'status-' + e.status">{{
+                      statusLabels[e.status]
+                    }}</span>
+                  </td>
+                  <td class="actions">
+                    <a class="btn btn-small btn-secondary" [routerLink]="e.id">Abrir</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (page.totalPages > 1) {
+          <nav class="pagination" aria-label="Paginação">
+            <button
+              class="btn btn-small btn-secondary"
+              type="button"
+              [disabled]="page.page === 0 || loading()"
+              (click)="goToPage(page.page - 1)"
+            >
+              Anterior
+            </button>
+            <span>Página {{ page.page + 1 }} de {{ page.totalPages }}</span>
+            <button
+              class="btn btn-small btn-secondary"
+              type="button"
+              [disabled]="page.page + 1 >= page.totalPages || loading()"
+              (click)="goToPage(page.page + 1)"
+            >
+              Seguinte
+            </button>
+          </nav>
+        }
+        <p class="muted total">{{ page.totalElements }} episódio(s).</p>
+      }
+    }
+  </div>
+</section>

@@ -13,6 +13,8 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ACCESS } from '../../../core/auth/roles';
 import { toApiError } from '../../../core/http/api-error';
+import { EpisodeSummary, STATUS_LABELS, TYPE_LABELS } from '../../episodes/data/episode.model';
+import { EpisodeService } from '../../episodes/data/episode.service';
 import { GENDER_LABELS, Patient } from '../data/patient.model';
 import { PatientService } from '../data/patient.service';
 
@@ -26,6 +28,7 @@ import { PatientService } from '../data/patient.service';
 export class PatientDetail implements OnInit {
   private readonly patients = inject(PatientService);
   private readonly auth = inject(AuthService);
+  private readonly episodeService = inject(EpisodeService);
 
   readonly id = input.required<string>();
 
@@ -33,6 +36,11 @@ export class PatientDetail implements OnInit {
   protected readonly canWrite = computed(() => this.auth.hasAnyRole(ACCESS.patientsWrite));
   protected readonly isAdmin = computed(() => this.auth.hasAnyRole(ACCESS.patientsAdmin));
   protected readonly canAudit = computed(() => this.auth.hasAnyRole(ACCESS.audit));
+  protected readonly canOpenEpisode = computed(() => this.auth.hasAnyRole(ACCESS.episodesSchedule));
+  protected readonly episodes = signal<EpisodeSummary[]>([]);
+  protected readonly episodeTotal = signal(0);
+  protected readonly typeLabels = TYPE_LABELS;
+  protected readonly statusLabels = STATUS_LABELS;
   protected readonly patient = signal<Patient | null>(null);
   protected readonly loading = signal(true);
   protected readonly busy = signal(false);
@@ -48,6 +56,12 @@ export class PatientDetail implements OnInit {
       next: (p) => {
         this.patient.set(p);
         this.loading.set(false);
+        this.episodeService.search({ patientId: p.id, order: 'desc', size: 10 }).subscribe({
+          next: (page) => {
+            this.episodes.set(page.content);
+            this.episodeTotal.set(page.totalElements);
+          },
+        });
       },
       error: (err: unknown) => {
         this.error.set(toApiError(err).message);

@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/auth/roles';
 import { Patient } from '../data/patient.model';
+import { EpisodeService } from '../../episodes/data/episode.service';
 import { PatientService } from '../data/patient.service';
 import { PatientDetail } from './patient-detail';
 
@@ -31,6 +32,28 @@ function render(roles: Role[]) {
       provideRouter([]),
       { provide: PatientService, useValue: { view: () => of(PATIENT) } },
       {
+        provide: EpisodeService,
+        useValue: {
+          search: () =>
+            of({
+              content: [
+                {
+                  id: 'e1',
+                  scheduledAt: '2026-11-10T09:00:00Z',
+                  type: 'OUTPATIENT',
+                  status: 'COMPLETED',
+                  reason: 'Febre',
+                  doctorName: 'Dr. Rui',
+                },
+              ],
+              page: 0,
+              size: 10,
+              totalElements: 1,
+              totalPages: 1,
+            }),
+        },
+      },
+      {
         provide: AuthService,
         useValue: { hasAnyRole: (r: Role[]) => roles.some((x) => r.includes(x)) },
       },
@@ -43,6 +66,12 @@ function render(roles: Role[]) {
 }
 
 describe('PatientDetail', () => {
+  it('lista os episódios do paciente', () => {
+    const el = render(['NURSE']);
+    expect(el.querySelector('.episode-list')?.textContent).toContain('Consulta externa');
+    expect(el.querySelector('.episode-list')?.textContent).toContain('Concluído');
+  });
+
   it('destaca as alergias e mostra o processo', () => {
     const el = render(['NURSE']);
     expect(el.querySelector('.allergy')?.textContent).toContain('Penicilina');

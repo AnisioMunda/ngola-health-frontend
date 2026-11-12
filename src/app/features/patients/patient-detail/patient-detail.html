@@ -106,6 +106,42 @@
       </dl>
     </div>
 
+    <div class="card">
+      <div class="section-head">
+        <h2>Episódios</h2>
+        @if (canOpenEpisode() && p.active) {
+          <a
+            class="btn btn-small btn-primary"
+            routerLink="/episodes/new"
+            [queryParams]="{ patientId: p.id }"
+            >Novo episódio</a
+          >
+        }
+      </div>
+      @if (episodes().length === 0) {
+        <p class="muted">Sem episódios registados.</p>
+      } @else {
+        <ul class="episode-list">
+          @for (e of episodes(); track e.id) {
+            <li>
+              <a [routerLink]="['/episodes', e.id]"
+                >{{ e.scheduledAt | date: 'dd/MM/yyyy HH:mm' }} · {{ typeLabels[e.type] }}</a
+              >
+              <span class="badge" [class]="'status-' + e.status">{{ statusLabels[e.status] }}</span>
+              <span class="subtext"
+                >{{ e.reason }}{{ e.doctorName ? ' — ' + e.doctorName : '' }}</span
+              >
+            </li>
+          }
+        </ul>
+        @if (episodeTotal() > episodes().length) {
+          <p class="muted small">
+            A mostrar os {{ episodes().length }} mais recentes de {{ episodeTotal() }}.
+          </p>
+        }
+      }
+    </div>
+
     <p class="muted small">
       Registado em {{ p.createdAt | date: 'dd/MM/yyyy HH:mm' }} · última alteração
       {{ p.updatedAt | date: 'dd/MM/yyyy HH:mm' }}

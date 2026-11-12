@@ -49,11 +49,11 @@ describe('Shell', () => {
 
   it('o administrador do hospital não vê hospitais', () => {
     const { links, account } = render(['ADMIN'], 'HCL');
-    expect(links).toEqual(['Início', 'Pacientes', 'Utilizadores', 'Auditoria']);
+    expect(links).toEqual(['Início', 'Pacientes', 'Episódios', 'Utilizadores', 'Auditoria']);
     expect(account).toContain('Administrador · HCL');
   });
 
-  it('o médico vê o início e os pacientes', () => {
-    expect(render(['DOCTOR'], 'HCL').links).toEqual(['Início', 'Pacientes']);
+  it('o médico vê o início, os pacientes e os episódios', () => {
+    expect(render(['DOCTOR'], 'HCL').links).toEqual(['Início', 'Pacientes', 'Episódios']);
   });
 });

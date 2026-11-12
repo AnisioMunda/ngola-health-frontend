@@ -420,3 +420,55 @@ fieldset.card {
     margin: 0;
   }
 }
+
+/* Estados dos episódios */
+.badge.status-SCHEDULED {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.badge.status-IN_PROGRESS {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.badge.status-COMPLETED {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.badge.status-CANCELLED {
+  background: var(--color-bg);
+  color: var(--color-muted);
+  text-decoration: line-through;
+}
+
+.check-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.chosen {
+  margin: 0;
+
+  .btn-link {
+    margin-left: var(--space-2);
+  }
+}
+
+.candidates {
+  margin: var(--space-3) 0 0;
+  padding-left: var(--space-5);
+}
+
+.password-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
