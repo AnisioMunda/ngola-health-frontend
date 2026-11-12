@@ -215,6 +215,43 @@
         </dl>
       }
     </div>
+
+    @if (canReadRx()) {
+      <div class="card">
+        <div class="section-head">
+          <h2>Prescrições</h2>
+          @if (canPrescribe()) {
+            <a
+              class="btn btn-small btn-primary"
+              routerLink="/prescriptions/new"
+              [queryParams]="{ episodeId: e.id }"
+              >Prescrever</a
+            >
+          }
+        </div>
+        @if (prescriptions().length === 0) {
+          <p class="muted">Sem prescrições neste episódio.</p>
+        } @else {
+          <ul class="rx-list">
+            @for (rx of prescriptions(); track rx.id) {
+              <li>
+                <a [routerLink]="['/prescriptions', rx.id]"
+                  ><code>{{ rx.number }}</code></a
+                >
+                <span class="badge rx-{{ rx.effectiveStatus }}">{{
+                  rxLabels[rx.effectiveStatus]
+                }}</span>
+                <span class="subtext">
+                  @for (i of rx.items; track i.id) {
+                    {{ i.medicationName }} ×{{ i.quantity }}{{ $last ? '' : ', ' }}
+                  }
+                </span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
   } @else {
     <div class="alert alert-error" role="alert">{{ error() }}</div>
   }

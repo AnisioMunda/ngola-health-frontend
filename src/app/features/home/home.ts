@@ -2,8 +2,9 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { RouterLink } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
-import { ACCESS } from '../../core/auth/roles';
+import { areasFor } from '../../core/navigation/navigation';
 
+/** Página inicial: um cartão por área a que o perfil tem acesso (mesma fonte do menu). */
 @Component({
   selector: 'app-home',
   imports: [RouterLink],
@@ -16,47 +17,12 @@ import { ACCESS } from '../../core/auth/roles';
         </div>
       </header>
       <div class="tiles">
-        @if (canPatients()) {
-          <a class="card tile" routerLink="/patients">
-            <strong>Pacientes</strong>
-            <span class="muted">Pesquisar, registar e consultar fichas.</span>
+        @for (area of areas(); track area.path) {
+          <a class="card tile" [routerLink]="area.path">
+            <strong>{{ area.label }}</strong>
+            <span class="muted">{{ area.description }}</span>
           </a>
-        }
-        @if (canPatients()) {
-          <a class="card tile" routerLink="/triage">
-            <strong>Triagem</strong>
-            <span class="muted">Fila da urgência por prioridade (Manchester).</span>
-          </a>
-          <a class="card tile" routerLink="/episodes">
-            <strong>Episódios</strong>
-            <span class="muted">Lista de trabalho: consultas, urgências e exames.</span>
-          </a>
-        }
-        @if (canPharmacy()) {
-          <a class="card tile" routerLink="/pharmacy">
-            <strong>Farmácia</strong>
-            <span class="muted">Catálogo, stock, lotes e dispensa.</span>
-          </a>
-        }
-        @if (canHospitals()) {
-          <a class="card tile" routerLink="/hospitals">
-            <strong>Hospitais</strong>
-            <span class="muted">Instituições registadas na plataforma.</span>
-          </a>
-        }
-        @if (canUsers()) {
-          <a class="card tile" routerLink="/users">
-            <strong>Utilizadores</strong>
-            <span class="muted">Contas, perfis e senhas.</span>
-          </a>
-        }
-        @if (canAudit()) {
-          <a class="card tile" routerLink="/audit">
-            <strong>Auditoria</strong>
-            <span class="muted">Quem fez o quê, e quando.</span>
-          </a>
-        }
-        @if (!canPatients() && !canPharmacy() && !canHospitals() && !canUsers()) {
+        } @empty {
           <p class="card muted">Os módulos do seu perfil ficarão disponíveis aqui.</p>
         }
       </div>
@@ -84,9 +50,5 @@ import { ACCESS } from '../../core/auth/roles';
 export class Home {
   private readonly auth = inject(AuthService);
   protected readonly user = this.auth.user;
-  protected readonly canPatients = computed(() => this.auth.hasAnyRole(ACCESS.patientsRead));
-  protected readonly canPharmacy = computed(() => this.auth.hasAnyRole(ACCESS.pharmacyRead));
-  protected readonly canHospitals = computed(() => this.auth.hasAnyRole(ACCESS.hospitals));
-  protected readonly canUsers = computed(() => this.auth.hasAnyRole(ACCESS.usersRead));
-  protected readonly canAudit = computed(() => this.auth.hasAnyRole(ACCESS.audit));
+  protected readonly areas = computed(() => areasFor((roles) => this.auth.hasAnyRole(roles)));
 }

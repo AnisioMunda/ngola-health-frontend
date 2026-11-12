@@ -1,0 +1,23 @@
+.card + .card,
+.lines,
+.lines + .card {
+  margin-top: var(--space-4);
+}
+
+.line {
+  position: relative;
+}
+
+.remove {
+  margin-top: var(--space-2);
+  color: var(--color-danger);
+}
+
+.stock-warning {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  font-size: 0.875rem;
+}

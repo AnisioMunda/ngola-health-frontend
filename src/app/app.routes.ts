@@ -70,6 +70,15 @@ export const routes: Routes = [
           import('./features/pharmacy/pharmacy.routes').then((m) => m.PHARMACY_ROUTES),
       },
       {
+        path: 'prescriptions',
+        canActivate: [roleGuard],
+        data: { roles: ACCESS.prescriptionsRead },
+        loadChildren: () =>
+          import('./features/prescriptions/prescriptions.routes').then(
+            (m) => m.PRESCRIPTION_ROUTES,
+          ),
+      },
+      {
         path: 'audit',
         title: 'Auditoria · Ngola Health',
         canActivate: [roleGuard],

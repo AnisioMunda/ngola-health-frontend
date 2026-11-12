@@ -1,0 +1,113 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <a class="btn-link back" [routerLink]="['/episodes', episodeId()]">← Episódio</a>
+      <h1>Nova prescrição</h1>
+      @if (episode(); as e) {
+        <p class="muted">
+          {{ e.patientName }} · processo <code>{{ e.patientRecordNumber }}</code> · {{ e.reason }}
+        </p>
+      }
+    </div>
+  </header>
+
+  @if (patient(); as p) {
+    @if (p.allergies) {
+      <div class="alert alert-error" role="alert"><strong>Alergias:</strong> {{ p.allergies }}</div>
+    } @else {
+      <div class="alert alert-info" role="status">
+        Sem alergias registadas na ficha do paciente.
+      </div>
+    }
+  }
+
+  <div class="card">
+    <app-medication-picker label="Adicionar medicamento" (picked)="add($event)" />
+  </div>
+
+  @if (lines().length > 0) {
+    <div class="lines">
+      @for (l of lines(); track l.medicationId; let i = $index) {
+        <fieldset class="card line">
+          <legend>{{ i + 1 }}. {{ label(l.medication) }}</legend>
+          @if (l.medication.stockAvailable < l.quantity) {
+            <p class="stock-warning">
+              Stock na farmácia: {{ l.medication.stockAvailable }}
+              {{ l.medication.dispensingUnit }} — a dispensa pode ficar parcial ou o doente terá de
+              adquirir fora.
+            </p>
+          }
+          <div class="grid">
+            <label class="field"
+              ><span>Quantidade ({{ l.medication.dispensingUnit }}) *</span>
+              <input type="number" min="1" [(ngModel)]="l.quantity" [name]="'qty' + i" />
+            </label>
+            <label class="field"
+              ><span>Dose *</span><input [(ngModel)]="l.dosage" [name]="'dose' + i" maxlength="200"
+            /></label>
+            <label class="field"
+              ><span>Frequência *</span
+              ><input [(ngModel)]="l.frequency" [name]="'freq' + i" maxlength="100"
+            /></label>
+            <label class="field"
+              ><span>Duração (dias)</span>
+              <input
+                type="number"
+                min="1"
+                max="365"
+                [(ngModel)]="l.durationDays"
+                [name]="'dur' + i"
+              />
+            </label>
+            <label class="field"
+              ><span>Via *</span>
+              <select [(ngModel)]="l.route" [name]="'route' + i">
+                @for (r of routes; track r[0]) {
+                  <option [value]="r[0]">{{ r[1] }}</option>
+                }
+              </select>
+            </label>
+            <label class="field span-2"
+              ><span>Instruções</span>
+              <input
+                [(ngModel)]="l.instructions"
+                [name]="'instr' + i"
+                maxlength="500"
+                placeholder="Ex.: tomar após as refeições"
+              />
+            </label>
+          </div>
+          <button class="btn-link remove" type="button" (click)="remove(i)">Retirar</button>
+        </fieldset>
+      }
+    </div>
+  }
+
+  <div class="card">
+    <div class="grid">
+      <label class="field"
+        ><span>Validade (dias)</span
+        ><input type="number" min="1" max="365" [(ngModel)]="validityDays" name="validity"
+      /></label>
+      <label class="field span-2"
+        ><span>Notas</span><input [(ngModel)]="notes" name="notes" maxlength="4000"
+      /></label>
+    </div>
+  </div>
+
+  @if (error(); as message) {
+    <div class="alert alert-error" role="alert">{{ message }}</div>
+  }
+
+  <div class="form-actions">
+    <a class="btn btn-secondary" [routerLink]="['/episodes', episodeId()]">Cancelar</a>
+    <button
+      class="btn btn-primary"
+      type="button"
+      [disabled]="saving() || episode()?.status !== 'IN_PROGRESS'"
+      (click)="submit()"
+    >
+      {{ saving() ? 'A emitir…' : 'Emitir prescrição' }}
+    </button>
+  </div>
+</section>

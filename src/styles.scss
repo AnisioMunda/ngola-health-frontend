@@ -529,3 +529,37 @@ a.alerts-link {
     text-decoration: underline;
   }
 }
+
+/* Estados das prescrições */
+.badge.rx-ACTIVE {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.badge.rx-PARTIALLY_DISPENSED {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.badge.rx-DISPENSED {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.badge.rx-CANCELLED,
+.badge.rx-EXPIRED {
+  background: var(--color-bg);
+  color: var(--color-muted);
+}
+
+/* Impressão: só o conteúdo da página */
+@media print {
+  .topbar,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+}

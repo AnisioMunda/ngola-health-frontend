@@ -15,6 +15,11 @@ import { Observable } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ACCESS } from '../../../core/auth/roles';
 import { toApiError } from '../../../core/http/api-error';
+import {
+  PRESCRIPTION_STATUS_LABELS,
+  Prescription,
+} from '../../prescriptions/data/prescription.model';
+import { PrescriptionService } from '../../prescriptions/data/prescription.service';
 import { Doctor, Episode, STATUS_LABELS, TYPE_LABELS, Vitals } from '../data/episode.model';
 import { EpisodeService } from '../data/episode.service';
 
@@ -32,6 +37,7 @@ export class EpisodeDetail implements OnInit {
   private readonly episodes = inject(EpisodeService);
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
+  private readonly prescriptionService = inject(PrescriptionService);
 
   readonly id = input.required<string>();
 
@@ -43,6 +49,9 @@ export class EpisodeDetail implements OnInit {
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly editing = signal<'vitals' | 'notes' | null>(null);
+  protected readonly prescriptions = signal<Prescription[]>([]);
+  protected readonly rxLabels = PRESCRIPTION_STATUS_LABELS;
+  protected readonly canReadRx = computed(() => this.auth.hasAnyRole(ACCESS.prescriptionsRead));
 
   private readonly isScheduler = computed(() => this.auth.hasAnyRole(ACCESS.episodesSchedule));
   private readonly isCare = computed(() => this.auth.hasAnyRole(ACCESS.episodesCare));
@@ -54,6 +63,7 @@ export class EpisodeDetail implements OnInit {
   protected readonly canEditVitals = computed(() => this.inProgress() && this.isCare());
   protected readonly canEditNotes = computed(() => this.inProgress() && this.isDoctor());
   protected readonly canComplete = computed(() => this.inProgress() && this.isDoctor());
+  protected readonly canPrescribe = computed(() => this.inProgress() && this.isDoctor());
   protected readonly canCancel = computed(
     () =>
       (this.status() === 'SCHEDULED' && this.isScheduler()) ||
@@ -85,6 +95,11 @@ export class EpisodeDetail implements OnInit {
       next: (e) => {
         this.episode.set(e);
         this.loading.set(false);
+        if (this.canReadRx()) {
+          this.prescriptionService
+            .byEpisode(e.id)
+            .subscribe({ next: (list) => this.prescriptions.set(list) });
+        }
         if (this.canAssignDoctor()) {
           this.episodes.doctors().subscribe({ next: (list) => this.doctors.set(list) });
         }

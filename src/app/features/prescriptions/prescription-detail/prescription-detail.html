@@ -1,0 +1,128 @@
+<section class="page">
+  <a class="btn-link back no-print" routerLink="/prescriptions">← Prescrições</a>
+
+  @if (prescription(); as p) {
+    <header class="page-header">
+      <div>
+        <h1>Prescrição {{ p.number }}</h1>
+        <p class="muted">
+          <a [routerLink]="['/patients', p.patientId]">{{ p.patientName }}</a> · processo
+          <code>{{ p.patientRecordNumber }}</code>
+        </p>
+        <p class="muted">
+          Emitida {{ p.issuedAt | date: 'dd/MM/yyyy HH:mm' }} por {{ p.prescriberName ?? '—' }} ·
+          válida até
+          {{ p.validUntil | date: 'dd/MM/yyyy' }}
+        </p>
+        <span class="badge rx-{{ p.effectiveStatus }}">{{ statusLabels[p.effectiveStatus] }}</span>
+      </div>
+      <div class="header-actions no-print">
+        @if (canAudit()) {
+          <a
+            class="btn btn-link"
+            routerLink="/audit"
+            [queryParams]="{ entityType: 'PRESCRIPTION', entityId: p.id }"
+            >Ver histórico</a
+          >
+        }
+        <a class="btn btn-secondary" [routerLink]="['/episodes', p.episodeId]">Episódio</a>
+        <button class="btn btn-secondary" type="button" (click)="print()">Imprimir</button>
+        @if (canCancel()) {
+          <button class="btn btn-danger" type="button" [disabled]="busy()" (click)="cancel()">
+            Cancelar
+          </button>
+        }
+      </div>
+    </header>
+
+    @if (notice(); as message) {
+      <div class="alert alert-success no-print" role="status">{{ message }}</div>
+    }
+    @if (error(); as message) {
+      <div class="alert alert-error no-print" role="alert">{{ message }}</div>
+    }
+    @if (p.cancelledAt) {
+      <div class="alert alert-info" role="status">
+        Cancelada em {{ p.cancelledAt | date: 'dd/MM/yyyy HH:mm' }} por
+        {{ p.cancelledByName ?? '—' }}: {{ p.cancellationReason }}
+      </div>
+    }
+
+    <div class="card table-card">
+      <div class="table-scroll">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Medicamento e posologia</th>
+              <th scope="col">Prescrito</th>
+              <th scope="col">Dispensado</th>
+              @if (canDispense()) {
+                <th scope="col" class="no-print">Stock</th>
+                <th scope="col" class="no-print">Dispensar agora</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (i of p.items; track i.id) {
+              <tr>
+                <td>{{ i.lineNumber }}</td>
+                <td>
+                  <strong>{{ i.medicationName }}</strong>
+                  <span class="subtext">
+                    {{ i.dosage }}, {{ i.frequency
+                    }}{{ i.durationDays ? ', durante ' + i.durationDays + ' dias' : '' }} · via
+                    {{ routeLabels[i.route] }}{{ i.instructions ? ' · ' + i.instructions : '' }}
+                  </span>
+                </td>
+                <td>{{ i.quantity }} {{ i.dispensingUnit }}</td>
+                <td>
+                  {{ i.quantityDispensed
+                  }}{{ i.remaining > 0 ? ' (faltam ' + i.remaining + ')' : '' }}
+                </td>
+                @if (canDispense()) {
+                  <td class="no-print" [class.short]="i.stockAvailable < i.remaining">
+                    {{ i.stockAvailable }}
+                  </td>
+                  <td class="no-print">
+                    @if (i.remaining > 0) {
+                      <input
+                        class="qty"
+                        type="number"
+                        min="0"
+                        [max]="i.remaining"
+                        [(ngModel)]="toDispense[i.id]"
+                        [name]="'d' + i.id"
+                        [attr.aria-label]="'Quantidade a dispensar de ' + i.medicationName"
+                      />
+                    } @else {
+                      —
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (canDispense()) {
+        <div class="dispense-bar no-print">
+          <span class="muted"
+            >Os lotes são escolhidos automaticamente pela validade mais próxima (FEFO).</span
+          >
+          <button class="btn btn-primary" type="button" [disabled]="busy()" (click)="dispense()">
+            Dispensar
+          </button>
+        </div>
+      }
+    </div>
+
+    @if (p.notes) {
+      <p class="notes"><strong>Notas:</strong> {{ p.notes }}</p>
+    }
+  } @else if (error(); as message) {
+    <div class="alert alert-error" role="alert">{{ message }}</div>
+  } @else {
+    <p class="card muted" role="status">A abrir prescrição…</p>
+  }
+</section>
