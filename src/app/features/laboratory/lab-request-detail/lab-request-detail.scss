@@ -1,0 +1,53 @@
+.page-header p {
+  margin: var(--space-1) 0;
+}
+
+.page-header .badge {
+  margin-right: var(--space-2);
+}
+
+.collect {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.entry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+
+  input:not([type='checkbox']) {
+    width: 9rem;
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    font: inherit;
+  }
+}
+
+.amend input:not([type='checkbox']):last-of-type {
+  width: 16rem;
+}
+
+.value {
+  font-weight: 600;
+  margin-right: var(--space-2);
+}
+
+tr.flagged td {
+  background: var(--color-warning-soft);
+}
+
+.amendment {
+  font-style: italic;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

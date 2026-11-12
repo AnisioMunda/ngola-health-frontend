@@ -216,6 +216,51 @@
       }
     </div>
 
+    @if (canReadLab()) {
+      <div class="card">
+        <div class="section-head">
+          <h2>Exames</h2>
+          @if (canRequestLab()) {
+            <a
+              class="btn btn-small btn-primary"
+              routerLink="/lab/requests/new"
+              [queryParams]="{ episodeId: e.id }"
+              >Pedir exames</a
+            >
+          }
+        </div>
+        @if (labRequests().length === 0) {
+          <p class="muted">Sem exames pedidos neste episódio.</p>
+        } @else {
+          <ul class="rx-list">
+            @for (lr of labRequests(); track lr.id) {
+              <li>
+                <a [routerLink]="['/lab/requests', lr.id]"
+                  ><code>{{ lr.number }}</code></a
+                >
+                <span class="badge lab-{{ lr.status }}">{{ labLabels[lr.status] }}</span>
+                @if (lr.hasAbnormal) {
+                  <span class="badge badge-warning">Valores alterados</span>
+                }
+                <span class="subtext">
+                  @for (i of lr.items; track i.id) {
+                    {{ i.testName
+                    }}{{
+                      i.resultVisible
+                        ? ': ' +
+                          (i.numericValue ?? i.textValue) +
+                          (i.unit && i.numericValue !== null ? ' ' + i.unit : '')
+                        : ''
+                    }}{{ $last ? '' : ' · ' }}
+                  }
+                </span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+
     @if (canReadRx()) {
       <div class="card">
         <div class="section-head">

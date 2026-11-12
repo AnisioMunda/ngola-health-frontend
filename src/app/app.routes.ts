@@ -79,6 +79,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'lab',
+        canActivate: [roleGuard],
+        data: { roles: ACCESS.labRead },
+        loadChildren: () =>
+          import('./features/laboratory/laboratory.routes').then((m) => m.LAB_ROUTES),
+      },
+      {
         path: 'audit',
         title: 'Auditoria · Ngola Health',
         canActivate: [roleGuard],

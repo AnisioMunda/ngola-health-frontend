@@ -20,6 +20,8 @@ import {
   Prescription,
 } from '../../prescriptions/data/prescription.model';
 import { PrescriptionService } from '../../prescriptions/data/prescription.service';
+import { LAB_STATUS_LABELS, LabRequest } from '../../laboratory/data/lab.model';
+import { LabService } from '../../laboratory/data/lab.service';
 import { Doctor, Episode, STATUS_LABELS, TYPE_LABELS, Vitals } from '../data/episode.model';
 import { EpisodeService } from '../data/episode.service';
 
@@ -38,6 +40,7 @@ export class EpisodeDetail implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
   private readonly prescriptionService = inject(PrescriptionService);
+  private readonly labService = inject(LabService);
 
   readonly id = input.required<string>();
 
@@ -51,6 +54,9 @@ export class EpisodeDetail implements OnInit {
   protected readonly editing = signal<'vitals' | 'notes' | null>(null);
   protected readonly prescriptions = signal<Prescription[]>([]);
   protected readonly rxLabels = PRESCRIPTION_STATUS_LABELS;
+  protected readonly labRequests = signal<LabRequest[]>([]);
+  protected readonly labLabels = LAB_STATUS_LABELS;
+  protected readonly canReadLab = computed(() => this.auth.hasAnyRole(ACCESS.labRead));
   protected readonly canReadRx = computed(() => this.auth.hasAnyRole(ACCESS.prescriptionsRead));
 
   private readonly isScheduler = computed(() => this.auth.hasAnyRole(ACCESS.episodesSchedule));
@@ -64,6 +70,7 @@ export class EpisodeDetail implements OnInit {
   protected readonly canEditNotes = computed(() => this.inProgress() && this.isDoctor());
   protected readonly canComplete = computed(() => this.inProgress() && this.isDoctor());
   protected readonly canPrescribe = computed(() => this.inProgress() && this.isDoctor());
+  protected readonly canRequestLab = computed(() => this.inProgress() && this.isDoctor());
   protected readonly canCancel = computed(
     () =>
       (this.status() === 'SCHEDULED' && this.isScheduler()) ||
@@ -95,6 +102,9 @@ export class EpisodeDetail implements OnInit {
       next: (e) => {
         this.episode.set(e);
         this.loading.set(false);
+        if (this.canReadLab()) {
+          this.labService.byEpisode(e.id).subscribe({ next: (list) => this.labRequests.set(list) });
+        }
         if (this.canReadRx()) {
           this.prescriptionService
             .byEpisode(e.id)

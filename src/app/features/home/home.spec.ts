@@ -54,13 +54,14 @@ describe('Home', () => {
     ['ADMIN'],
     ['MANAGER'],
     ['SUPER_ADMIN'],
+    ['LAB_TECHNICIAN'],
   ])('cartões e menu coincidem para %s', (role) => {
     setup([role]);
     expect(tiles()).toEqual(menu());
   });
 
   it('perfil sem áreas vê a mensagem de espera', () => {
-    setup(['LAB_TECHNICIAN']);
+    setup(['PATIENT']);
     const fixture = TestBed.createComponent(Home);
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('ficarão disponíveis');

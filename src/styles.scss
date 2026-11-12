@@ -563,3 +563,25 @@ a.alerts-link {
     background: #fff;
   }
 }
+
+/* Estados dos pedidos de laboratório */
+.badge.lab-PENDING {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.badge.lab-COLLECTED,
+.badge.lab-IN_ANALYSIS {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.badge.lab-COMPLETED {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.badge.lab-CANCELLED {
+  background: var(--color-bg);
+  color: var(--color-muted);
+}

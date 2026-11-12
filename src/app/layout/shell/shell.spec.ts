@@ -59,6 +59,7 @@ describe('Shell', () => {
       'Triagem',
       'Episódios',
       'Prescrições',
+      'Laboratório',
       'Farmácia',
       'Utilizadores',
       'Auditoria',
@@ -73,6 +74,7 @@ describe('Shell', () => {
       'Triagem',
       'Episódios',
       'Prescrições',
+      'Laboratório',
       'Farmácia',
     ]);
   });

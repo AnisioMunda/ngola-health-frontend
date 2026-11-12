@@ -9,6 +9,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/auth/roles';
 import { Episode, EpisodeStatus } from '../data/episode.model';
+import { LabService } from '../../laboratory/data/lab.service';
 import { PrescriptionService } from '../../prescriptions/data/prescription.service';
 import { EpisodeService } from '../data/episode.service';
 import { EpisodeDetail } from './episode-detail';
@@ -64,6 +65,7 @@ describe('EpisodeDetail', () => {
         { provide: LOCALE_ID, useValue: 'pt-AO' },
         { provide: EpisodeService, useValue: service },
         { provide: PrescriptionService, useValue: { byEpisode: () => of([]) } },
+        { provide: LabService, useValue: { byEpisode: () => of([]) } },
         {
           provide: AuthService,
           useValue: { hasAnyRole: (r: Role[]) => roles.some((x) => r.includes(x)) },

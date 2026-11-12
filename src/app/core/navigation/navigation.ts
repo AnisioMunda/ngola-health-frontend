@@ -39,6 +39,12 @@ export const APP_AREAS: readonly AppArea[] = [
     roles: ACCESS.prescriptionsRead,
   },
   {
+    label: 'Laboratório',
+    path: '/lab',
+    description: 'Pedidos de exames, colheitas e resultados.',
+    roles: ACCESS.labRead,
+  },
+  {
     label: 'Farmácia',
     path: '/pharmacy',
     description: 'Catálogo, stock, lotes e dispensa.',

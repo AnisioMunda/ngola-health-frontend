@@ -1,0 +1,246 @@
+<section class="page">
+  <a class="btn-link back no-print" routerLink="/lab">← Laboratório</a>
+
+  @if (request(); as r) {
+    <header class="page-header">
+      <div>
+        <h1>Pedido {{ r.number }}</h1>
+        <p class="muted">
+          <a [routerLink]="['/patients', r.patientId]">{{ r.patientName }}</a> · processo
+          <code>{{ r.patientRecordNumber }}</code>
+        </p>
+        <p class="muted">
+          Pedido {{ r.requestedAt | date: 'dd/MM/yyyy HH:mm' }} por {{ r.requestedByName ?? '—' }}
+        </p>
+        <span class="badge lab-{{ r.status }}">{{ statusLabels[r.status] }}</span>
+        @if (r.priority === 'URGENT') {
+          <span class="badge badge-danger">Urgente</span>
+        }
+      </div>
+      <div class="header-actions no-print">
+        @if (canAudit()) {
+          <a
+            class="btn btn-link"
+            routerLink="/audit"
+            [queryParams]="{ entityType: 'LAB_REQUEST', entityId: r.id }"
+            >Ver histórico</a
+          >
+        }
+        <a class="btn btn-secondary" [routerLink]="['/episodes', r.episodeId]">Episódio</a>
+        <button class="btn btn-secondary" type="button" (click)="print()">Imprimir</button>
+        @if (canCancel()) {
+          <button class="btn btn-danger" type="button" [disabled]="busy()" (click)="cancel()">
+            Cancelar pedido
+          </button>
+        }
+        @if (canStart()) {
+          <button class="btn btn-primary" type="button" [disabled]="busy()" (click)="start()">
+            Iniciar análise
+          </button>
+        }
+      </div>
+    </header>
+
+    @if (error(); as message) {
+      <div class="alert alert-error no-print" role="alert">{{ message }}</div>
+    }
+    @if (r.clinicalInfo) {
+      <p><strong>Informação clínica:</strong> {{ r.clinicalInfo }}</p>
+    }
+    @if (r.cancelledAt) {
+      <div class="alert alert-info">
+        Cancelado {{ r.cancelledAt | date: 'dd/MM/yyyy HH:mm' }} por {{ r.cancelledByName }}:
+        {{ r.cancellationReason }}
+      </div>
+    }
+    @if (r.collectedAt) {
+      <p class="muted">
+        Colheita {{ r.collectedAt | date: 'dd/MM/yyyy HH:mm' }} por {{ r.collectedByName
+        }}{{ r.collectionNotes ? ' — ' + r.collectionNotes : '' }}
+      </p>
+    }
+
+    @if (canCollect()) {
+      <div class="card collect no-print">
+        <label class="field grow"
+          ><span>Notas da colheita</span
+          ><input [(ngModel)]="collectionNotes" name="collectionNotes" maxlength="500"
+        /></label>
+        <button class="btn btn-primary" type="button" [disabled]="busy()" (click)="collect()">
+          Registar colheita
+        </button>
+      </div>
+    }
+
+    <div class="card table-card">
+      <div class="table-scroll">
+        <table class="table results">
+          <thead>
+            <tr>
+              <th scope="col">Exame</th>
+              <th scope="col">Resultado</th>
+              <th scope="col">Referência</th>
+              <th scope="col">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (i of r.items; track i.id) {
+              <tr [class.flagged]="i.resultVisible && i.flag && i.flag !== 'NORMAL'">
+                <td>
+                  <strong>{{ i.testName }}</strong>
+                  <span class="subtext">{{ i.testCode }}</span>
+                </td>
+                <td>
+                  @if (canEdit(i)) {
+                    <div class="entry no-print">
+                      @if (i.resultType === 'NUMERIC') {
+                        <input
+                          type="number"
+                          step="any"
+                          [(ngModel)]="drafts[i.id].numericValue"
+                          [name]="'n' + i.id"
+                          [attr.aria-label]="'Valor de ' + i.testName"
+                        />
+                        <span class="muted">{{ i.unit }}</span>
+                      } @else {
+                        <input
+                          [(ngModel)]="drafts[i.id].textValue"
+                          [name]="'t' + i.id"
+                          maxlength="500"
+                          [attr.aria-label]="'Resultado de ' + i.testName"
+                          placeholder="Ex.: Negativo"
+                        />
+                        <label class="check-inline"
+                          ><input
+                            type="checkbox"
+                            [(ngModel)]="drafts[i.id].abnormal"
+                            [name]="'a' + i.id"
+                          />
+                          Alterado</label
+                        >
+                      }
+                      <button
+                        class="btn btn-small btn-secondary"
+                        type="button"
+                        [disabled]="busy()"
+                        (click)="saveResult(i)"
+                      >
+                        Guardar
+                      </button>
+                      @if (i.status === 'RESULTED') {
+                        <button
+                          class="btn btn-small btn-primary"
+                          type="button"
+                          [disabled]="busy()"
+                          (click)="validate(i)"
+                        >
+                          Validar
+                        </button>
+                      }
+                    </div>
+                  }
+                  @if (i.resultVisible) {
+                    <span class="value">
+                      {{
+                        i.numericValue !== null
+                          ? i.numericValue + (i.unit ? ' ' + i.unit : '')
+                          : i.textValue
+                      }}
+                    </span>
+                    @if (i.flag && i.flag !== 'NORMAL') {
+                      <span class="badge badge-warning">{{ flagLabels[i.flag] }}</span>
+                    }
+                    @if (i.amended) {
+                      <span class="badge">Corrigido</span>
+                    }
+                    @if (i.resultNotes) {
+                      <span class="subtext">{{ i.resultNotes }}</span>
+                    }
+                  } @else if (!canEdit(i) && i.status !== 'CANCELLED') {
+                    <span class="muted"
+                      >Aguarda {{ i.status === 'RESULTED' ? 'validação' : 'resultado' }}</span
+                    >
+                  }
+                  @if (canAmend() && i.status === 'VALIDATED') {
+                    @if (amending() === i.id) {
+                      <div class="entry amend no-print">
+                        @if (i.resultType === 'NUMERIC') {
+                          <input
+                            type="number"
+                            step="any"
+                            [(ngModel)]="drafts[i.id].numericValue"
+                            [name]="'an' + i.id"
+                            aria-label="Valor corrigido"
+                          />
+                        } @else {
+                          <input
+                            [(ngModel)]="drafts[i.id].textValue"
+                            [name]="'at' + i.id"
+                            aria-label="Resultado corrigido"
+                          />
+                          <label class="check-inline"
+                            ><input
+                              type="checkbox"
+                              [(ngModel)]="drafts[i.id].abnormal"
+                              [name]="'aa' + i.id"
+                            />
+                            Alterado</label
+                          >
+                        }
+                        <input
+                          [(ngModel)]="drafts[i.id].reason"
+                          [name]="'ar' + i.id"
+                          placeholder="Motivo da correcção *"
+                          maxlength="500"
+                          aria-label="Motivo da correcção"
+                        />
+                        <button
+                          class="btn btn-small btn-secondary"
+                          type="button"
+                          (click)="amending.set(null)"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          class="btn btn-small btn-primary"
+                          type="button"
+                          [disabled]="busy()"
+                          (click)="saveAmendment(i)"
+                        >
+                          Corrigir
+                        </button>
+                      </div>
+                    } @else {
+                      <button class="btn-link no-print" type="button" (click)="amending.set(i.id)">
+                        Corrigir resultado
+                      </button>
+                    }
+                  }
+                  @for (a of i.amendments; track a.amendedAt) {
+                    <span class="subtext amendment">
+                      Corrigido {{ a.amendedAt | date: 'dd/MM HH:mm' }} por {{ a.amendedByName }}:
+                      era {{ a.previousNumeric ?? a.previousText }} — {{ a.reason }}
+                    </span>
+                  }
+                </td>
+                <td>{{ reference(i) }}</td>
+                <td>
+                  {{ itemLabels[i.status] }}
+                  @if (i.validatedAt) {
+                    <span class="subtext"
+                      >{{ i.validatedByName }} · {{ i.validatedAt | date: 'dd/MM HH:mm' }}</span
+                    >
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  } @else if (error(); as message) {
+    <div class="alert alert-error" role="alert">{{ message }}</div>
+  } @else {
+    <p class="card muted" role="status">A abrir pedido…</p>
+  }
+</section>
