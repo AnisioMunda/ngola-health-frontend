@@ -69,6 +69,7 @@ describe('Shell', () => {
     expect(links).toEqual([
       'Início',
       'Pacientes',
+      'Agendamento',
       'Triagem',
       'Episódios',
       'Prescrições',
@@ -84,6 +85,7 @@ describe('Shell', () => {
     expect(render(['DOCTOR'], 'HCL').links).toEqual([
       'Início',
       'Pacientes',
+      'Agendamento',
       'Triagem',
       'Episódios',
       'Prescrições',

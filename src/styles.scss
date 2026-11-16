@@ -585,3 +585,26 @@ a.alerts-link {
   background: var(--color-bg);
   color: var(--color-muted);
 }
+
+/* Marcações (agendamento) */
+.badge.appt-SCHEDULED {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.badge.appt-CONFIRMED,
+.badge.appt-CHECKED_IN {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.badge.appt-NO_SHOW {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.badge.appt-CANCELLED {
+  background: var(--color-bg);
+  color: var(--color-muted);
+  text-decoration: line-through;
+}

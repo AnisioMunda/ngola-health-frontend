@@ -21,6 +21,12 @@ export const APP_AREAS: readonly AppArea[] = [
     roles: ACCESS.patientsRead,
   },
   {
+    label: 'Agendamento',
+    path: '/scheduling',
+    description: 'Agenda do dia, calendário, marcações e horários.',
+    roles: ACCESS.scheduleRead,
+  },
+  {
     label: 'Triagem',
     path: '/triage',
     description: 'Fila da urgência por prioridade (Manchester).',

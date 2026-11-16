@@ -50,6 +50,13 @@ export const routes: Routes = [
           import('./features/patients/patients.routes').then((m) => m.PATIENT_ROUTES),
       },
       {
+        path: 'scheduling',
+        canActivate: [roleGuard],
+        data: { roles: ACCESS.scheduleRead },
+        loadChildren: () =>
+          import('./features/scheduling/scheduling.routes').then((m) => m.SCHEDULING_ROUTES),
+      },
+      {
         path: 'triage',
         canActivate: [roleGuard],
         data: { roles: ACCESS.patientsRead },

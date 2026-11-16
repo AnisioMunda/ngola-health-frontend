@@ -59,4 +59,8 @@ export const ACCESS = {
   labRequest: ['DOCTOR'],
   labCollect: ['NURSE', 'LAB_TECHNICIAN'],
   labTechnician: ['LAB_TECHNICIAN'],
+  scheduleRead: ['ADMIN', 'MANAGER', 'DOCTOR', 'NURSE', 'RECEPTIONIST'],
+  scheduleManage: ['ADMIN', 'MANAGER'],
+  scheduleBlock: ['ADMIN', 'MANAGER', 'DOCTOR'],
+  appointmentBook: ['ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST'],
 } as const satisfies Record<string, readonly Role[]>;
