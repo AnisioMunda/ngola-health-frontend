@@ -108,6 +108,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'financial',
+        canActivate: [roleGuard],
+        data: { roles: ACCESS.financeRead },
+        loadChildren: () =>
+          import('./features/financial/financial.routes').then((m) => m.FINANCIAL_ROUTES),
+      },
+      {
         path: 'audit',
         title: 'Auditoria · Ngola Health',
         canActivate: [roleGuard],

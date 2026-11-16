@@ -76,6 +76,7 @@ describe('Shell', () => {
       'Prescrições',
       'Laboratório',
       'Farmácia',
+      'Financeiro',
       'Utilizadores',
       'Auditoria',
     ]);

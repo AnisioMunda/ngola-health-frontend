@@ -63,6 +63,12 @@ export const APP_AREAS: readonly AppArea[] = [
     roles: ACCESS.pharmacyRead,
   },
   {
+    label: 'Financeiro',
+    path: '/financial',
+    description: 'Facturas, recibos, caixa do dia e tabela de preços.',
+    roles: ACCESS.financeRead,
+  },
+  {
     label: 'Hospitais',
     path: '/hospitals',
     description: 'Instituições registadas na plataforma.',

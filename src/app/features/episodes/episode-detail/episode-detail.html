@@ -22,6 +22,14 @@
             >Ver histórico</a
           >
         }
+        @if (canBill()) {
+          <a
+            class="btn btn-secondary"
+            routerLink="/financial/new"
+            [queryParams]="{ patientId: e.patientId, episodeId: e.id }"
+            >Facturar</a
+          >
+        }
         @if (isInpatient()) {
           <a class="btn btn-secondary" [routerLink]="['/inpatient/episode', e.id]"
             >Ver internamento</a
