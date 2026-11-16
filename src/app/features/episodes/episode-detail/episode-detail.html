@@ -22,6 +22,19 @@
             >Ver histórico</a
           >
         }
+        @if (isInpatient()) {
+          <a class="btn btn-secondary" [routerLink]="['/inpatient/episode', e.id]"
+            >Ver internamento</a
+          >
+        }
+        @if (canAdmit()) {
+          <a
+            class="btn btn-secondary"
+            routerLink="/inpatient/admit"
+            [queryParams]="{ patientId: e.patientId, originEpisodeId: e.id }"
+            >Internar</a
+          >
+        }
         @if (canCancel()) {
           <button class="btn btn-danger" type="button" [disabled]="busy()" (click)="cancel()">
             Cancelar episódio

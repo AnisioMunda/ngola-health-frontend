@@ -31,7 +31,10 @@ export class EpisodeForm implements OnInit {
 
   readonly patientId = input<string>();
 
-  protected readonly types = Object.entries(TYPE_LABELS) as [EpisodeType, string][];
+  /** O internamento abre-se no módulo Internamento, não aqui. */
+  protected readonly types = (Object.entries(TYPE_LABELS) as [EpisodeType, string][]).filter(
+    ([type]) => type !== 'INPATIENT',
+  );
   protected readonly doctors = signal<Doctor[]>([]);
   protected readonly patient = signal<{
     id: string;

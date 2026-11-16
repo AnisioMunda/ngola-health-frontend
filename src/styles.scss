@@ -608,3 +608,27 @@ a.alerts-link {
   color: var(--color-muted);
   text-decoration: line-through;
 }
+
+/* Internamento */
+.badge.bed-AVAILABLE,
+.badge.adm-DISCHARGED {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.badge.bed-OCCUPIED,
+.badge.adm-ACTIVE {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.badge.bed-CLEANING {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.badge.bed-MAINTENANCE,
+.badge.adm-CANCELLED {
+  background: var(--color-bg);
+  color: var(--color-muted);
+}

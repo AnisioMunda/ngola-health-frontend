@@ -63,21 +63,32 @@ export class EpisodeDetail implements OnInit {
   private readonly isCare = computed(() => this.auth.hasAnyRole(ACCESS.episodesCare));
   private readonly isDoctor = computed(() => this.auth.hasAnyRole(ACCESS.episodesDoctor));
   private readonly status = computed(() => this.episode()?.status);
+  /** O episódio de internamento fecha-se pela alta, no módulo Internamento. */
+  protected readonly isInpatient = computed(() => this.episode()?.type === 'INPATIENT');
+  protected readonly canAdmit = computed(
+    () => this.inProgress() && this.isDoctor() && !this.isInpatient(),
+  );
   protected readonly canAudit = computed(() => this.auth.hasAnyRole(ACCESS.audit));
   protected readonly canStart = computed(() => this.status() === 'SCHEDULED' && this.isCare());
   protected readonly inProgress = computed(() => this.status() === 'IN_PROGRESS');
   protected readonly canEditVitals = computed(() => this.inProgress() && this.isCare());
   protected readonly canEditNotes = computed(() => this.inProgress() && this.isDoctor());
-  protected readonly canComplete = computed(() => this.inProgress() && this.isDoctor());
+  protected readonly canComplete = computed(
+    () => this.inProgress() && this.isDoctor() && !this.isInpatient(),
+  );
   protected readonly canPrescribe = computed(() => this.inProgress() && this.isDoctor());
   protected readonly canRequestLab = computed(() => this.inProgress() && this.isDoctor());
   protected readonly canCancel = computed(
     () =>
-      (this.status() === 'SCHEDULED' && this.isScheduler()) ||
-      (this.status() === 'IN_PROGRESS' && this.isDoctor()),
+      !this.isInpatient() &&
+      ((this.status() === 'SCHEDULED' && this.isScheduler()) ||
+        (this.status() === 'IN_PROGRESS' && this.isDoctor())),
   );
   protected readonly canAssignDoctor = computed(
-    () => (this.status() === 'SCHEDULED' || this.inProgress()) && this.isScheduler(),
+    () =>
+      !this.isInpatient() &&
+      (this.status() === 'SCHEDULED' || this.inProgress()) &&
+      this.isScheduler(),
   );
 
   readonly vitalsForm = this.fb.group({

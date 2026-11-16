@@ -1,0 +1,259 @@
+<section class="page narrow">
+  <a class="btn-link back" routerLink="/inpatient">← Internamento</a>
+
+  @if (a(); as a) {
+    <header class="page-header">
+      <div>
+        <h1>
+          Internamento <code>{{ a.number }}</code>
+        </h1>
+        <p class="muted">
+          <a [routerLink]="['/patients', a.patientId]">{{ a.patientName }}</a> · processo
+          <code>{{ a.patientRecordNumber }}</code> · {{ a.age ?? '?' }} anos
+        </p>
+        <span class="badge adm-{{ a.status }}">{{ statuses[a.status] }}</span>
+      </div>
+      <div class="header-actions">
+        <a class="btn btn-secondary" [routerLink]="['/episodes', a.episodeId]">Episódio</a>
+        @if (active()) {
+          @if (canTransfer()) {
+            <button class="btn btn-secondary" type="button" (click)="open('transfer')">
+              Transferir
+            </button>
+          }
+          @if (isDoctor()) {
+            <button class="btn btn-secondary" type="button" (click)="open('doctor')">Médico</button>
+            @if (cancellable()) {
+              <button class="btn btn-danger" type="button" (click)="open('cancel')">Anular</button>
+            }
+            <button class="btn btn-primary" type="button" (click)="open('discharge')">
+              Dar alta
+            </button>
+          }
+        }
+      </div>
+    </header>
+
+    @if (message(); as m) {
+      <div class="alert alert-success" role="status">{{ m }}</div>
+    }
+    @if (error(); as e) {
+      <div class="alert alert-error" role="alert">{{ e }}</div>
+    }
+
+    @switch (panel()) {
+      @case ('transfer') {
+        <form class="card" (ngSubmit)="transfer()">
+          <h2>Transferir de cama ou enfermaria</h2>
+          <div class="grid">
+            <label class="field">
+              <span>Enfermaria</span>
+              <select
+                name="tWard"
+                [ngModel]="transferWard"
+                (ngModelChange)="selectTransferWard($event)"
+              >
+                <option value="">Seleccione…</option>
+                @for (w of wards(); track w.id) {
+                  <option [value]="w.id" [disabled]="w.available === 0">
+                    {{ w.name }} — {{ w.available }} livre(s)
+                  </option>
+                }
+              </select>
+            </label>
+            <label class="field">
+              <span>Cama</span>
+              <select name="tBed" [(ngModel)]="transferBed" [disabled]="!transferWard">
+                <option value="">Seleccione…</option>
+                @for (b of freeBeds(); track b.id) {
+                  <option [value]="b.id">{{ b.code }}</option>
+                }
+              </select>
+            </label>
+            <label class="field span-2">
+              <span>Motivo</span>
+              <input name="tReason" [(ngModel)]="transferReason" maxlength="300" />
+            </label>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-secondary" type="button" (click)="panel.set(null)">
+              Voltar
+            </button>
+            <button
+              class="btn btn-primary"
+              type="submit"
+              [disabled]="busy() || !transferBed || !transferReason.trim()"
+            >
+              Transferir
+            </button>
+          </div>
+        </form>
+      }
+      @case ('discharge') {
+        <form class="card" (ngSubmit)="discharge()">
+          <h2>Alta</h2>
+          <div class="grid">
+            <label class="field">
+              <span>Estado à saída</span>
+              <select name="condition" [(ngModel)]="condition">
+                @for (c of conditionKeys; track c) {
+                  <option [value]="c">{{ conditions[c] }}</option>
+                }
+              </select>
+            </label>
+            <label class="field span-2">
+              <span>Diagnóstico final</span>
+              <textarea
+                name="diagnosis"
+                [(ngModel)]="diagnosis"
+                rows="2"
+                maxlength="4000"
+              ></textarea>
+            </label>
+            <label class="field span-2">
+              <span>Resumo da alta (opcional)</span>
+              <textarea
+                name="summary"
+                [(ngModel)]="summary"
+                rows="4"
+                placeholder="Evolução, tratamento, medicação à saída, recomendações…"
+              ></textarea>
+            </label>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-secondary" type="button" (click)="panel.set(null)">
+              Voltar
+            </button>
+            <button class="btn btn-primary" type="submit" [disabled]="busy() || !diagnosis.trim()">
+              Confirmar alta
+            </button>
+          </div>
+        </form>
+      }
+      @case ('cancel') {
+        <form class="card" (ngSubmit)="cancel()">
+          <p>
+            A anulação serve para corrigir um internamento registado por engano (até 24 horas). O
+            episódio é cancelado e a cama fica para limpeza.
+          </p>
+          <label class="field">
+            <span>Motivo</span>
+            <input name="cReason" [(ngModel)]="cancelReason" maxlength="500" />
+          </label>
+          <div class="form-actions">
+            <button class="btn btn-secondary" type="button" (click)="panel.set(null)">
+              Voltar
+            </button>
+            <button
+              class="btn btn-danger"
+              type="submit"
+              [disabled]="busy() || !cancelReason.trim()"
+            >
+              Anular internamento
+            </button>
+          </div>
+        </form>
+      }
+      @case ('doctor') {
+        <form class="card" (ngSubmit)="assignDoctor()">
+          <label class="field">
+            <span>Médico responsável</span>
+            <select name="newDoctor" [(ngModel)]="newDoctor">
+              @for (d of doctors(); track d.id) {
+                <option [value]="d.id">{{ d.fullName }}</option>
+              }
+            </select>
+          </label>
+          <div class="form-actions">
+            <button class="btn btn-secondary" type="button" (click)="panel.set(null)">
+              Voltar
+            </button>
+            <button class="btn btn-primary" type="submit" [disabled]="busy()">Guardar</button>
+          </div>
+        </form>
+      }
+    }
+
+    <div class="card">
+      <dl class="details">
+        <dt>Local</dt>
+        <dd>
+          <a [routerLink]="['/inpatient/wards', a.wardId]">{{ a.wardName }}</a
+          >, cama
+          {{ a.bedCode }}
+        </dd>
+        <dt>Médico responsável</dt>
+        <dd>{{ a.responsibleDoctorName }}</dd>
+        <dt>Motivo</dt>
+        <dd>{{ a.reason }}</dd>
+        <dt>Entrada</dt>
+        <dd>
+          {{ a.admittedAt | date: 'dd/MM/yyyy HH:mm' }} por {{ a.admittedByName }} ·
+          {{ a.lengthOfStayDays }} dia(s)
+        </dd>
+        <dt>Alta prevista</dt>
+        <dd>
+          @if (active() && canTransfer()) {
+            <input type="date" name="expected" [(ngModel)]="expected" />
+            <button
+              class="btn btn-small btn-secondary"
+              type="button"
+              [disabled]="busy()"
+              (click)="saveExpected()"
+            >
+              Guardar
+            </button>
+          } @else {
+            {{ a.expectedDischargeDate ? (a.expectedDischargeDate | date: 'dd/MM/yyyy') : '—' }}
+          }
+        </dd>
+        @if (a.originEpisodeId) {
+          <dt>Origem</dt>
+          <dd><a [routerLink]="['/episodes', a.originEpisodeId]">Episódio de origem</a></dd>
+        }
+        @if (a.dischargedAt) {
+          <dt>Alta</dt>
+          <dd>
+            {{ a.dischargedAt | date: 'dd/MM/yyyy HH:mm' }} por {{ a.dischargedByName }} —
+            {{ a.dischargeCondition ? conditions[a.dischargeCondition] : '' }}
+          </dd>
+          <dt>Diagnóstico final</dt>
+          <dd>{{ a.dischargeDiagnosis }}</dd>
+          @if (a.dischargeSummary) {
+            <dt>Resumo</dt>
+            <dd>{{ a.dischargeSummary }}</dd>
+          }
+        }
+        @if (a.cancelledAt) {
+          <dt>Anulado</dt>
+          <dd>
+            {{ a.cancelledAt | date: 'dd/MM/yyyy HH:mm' }} por {{ a.cancelledByName }} —
+            {{ a.cancellationReason }}
+          </dd>
+        }
+      </dl>
+    </div>
+
+    <div class="card">
+      <h2>Mudanças de cama</h2>
+      @if (a.transfers.length === 0) {
+        <p class="muted">Sem transferências.</p>
+      } @else {
+        <ol class="transfers">
+          @for (t of a.transfers; track t.transferredAt) {
+            <li>
+              {{ t.transferredAt | date: 'dd/MM HH:mm' }} — {{ t.fromWardName }} ({{
+                t.fromBedCode
+              }}) → {{ t.toWardName }} ({{ t.toBedCode }}): {{ t.reason }}
+              <span class="muted">· {{ t.transferredByName }}</span>
+            </li>
+          }
+        </ol>
+      }
+    </div>
+  } @else if (error(); as e) {
+    <div class="alert alert-error" role="alert">{{ e }}</div>
+  } @else {
+    <p class="empty" role="status">A carregar…</p>
+  }
+</section>

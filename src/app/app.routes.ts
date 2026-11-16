@@ -70,6 +70,13 @@ export const routes: Routes = [
           import('./features/episodes/episodes.routes').then((m) => m.EPISODE_ROUTES),
       },
       {
+        path: 'inpatient',
+        canActivate: [roleGuard],
+        data: { roles: ACCESS.inpatientRead },
+        loadChildren: () =>
+          import('./features/inpatient/inpatient.routes').then((m) => m.INPATIENT_ROUTES),
+      },
+      {
         path: 'pharmacy',
         canActivate: [roleGuard],
         data: { roles: ACCESS.pharmacyRead },

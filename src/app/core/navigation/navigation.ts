@@ -39,6 +39,12 @@ export const APP_AREAS: readonly AppArea[] = [
     roles: ACCESS.patientsRead,
   },
   {
+    label: 'Internamento',
+    path: '/inpatient',
+    description: 'Enfermarias, mapa de camas, internamentos e altas.',
+    roles: ACCESS.inpatientRead,
+  },
+  {
     label: 'Prescrições',
     path: '/prescriptions',
     description: 'Receitas emitidas e por dispensar.',
