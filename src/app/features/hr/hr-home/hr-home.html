@@ -1,0 +1,149 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Recursos humanos</h1>
+    </div>
+    <div class="header-actions">
+      <a class="btn btn-secondary" routerLink="schedule">Escala</a>
+      <a class="btn btn-secondary" routerLink="leaves">Folgas e férias</a>
+      @if (isManager()) {
+        <a class="btn btn-secondary" routerLink="attendance">Registos de ponto</a>
+      }
+    </div>
+  </header>
+
+  @if (error(); as e) {
+    <div class="alert alert-error" role="alert">{{ e }}</div>
+  }
+
+  <div class="columns">
+    <div class="card clock">
+      <h2>O meu ponto</h2>
+      @if (current() === undefined) {
+        <p class="muted" role="status">A carregar…</p>
+      } @else if (current(); as c) {
+        <p class="status on">
+          Em serviço desde <strong>{{ c.clockIn | date: 'HH:mm' }}</strong>
+          @if (c.lateMinutes > 0) {
+            <span class="badge badge-warning">{{ c.lateMinutes }} min de atraso</span>
+          }
+        </p>
+        @if (c.shiftEndsAt) {
+          <p class="muted">Turno até às {{ c.shiftEndsAt | date: 'HH:mm' }}</p>
+        }
+        <button class="btn btn-primary big" type="button" [disabled]="busy()" (click)="clockOut()">
+          Registar saída
+        </button>
+      } @else {
+        <p class="status">Sem entrada registada.</p>
+        <button class="btn btn-primary big" type="button" [disabled]="busy()" (click)="clockIn()">
+          Registar entrada
+        </button>
+      }
+      @if (lastClosed(); as l) {
+        <p class="alert alert-success" role="status">
+          Saída registada: {{ hours(l.minutesWorked) }} trabalhadas
+          @if (l.overtimeMinutes > 0) {
+            ({{ hours(l.overtimeMinutes) }} extra)
+          }
+        </p>
+      }
+    </div>
+
+    <div class="card">
+      <h2>Os meus turnos (7 dias)</h2>
+      <ul class="plain">
+        @for (s of myShifts(); track s.id) {
+          <li>
+            <strong>{{ s.startsAt | date: 'EEE dd/MM' }}</strong> — {{ shiftLabels[s.type] }},
+            {{ s.startsAt | date: 'HH:mm' }}–{{ s.endsAt | date: 'HH:mm' }}
+            @if (s.wardName) {
+              · {{ s.wardName }}
+            }
+          </li>
+        } @empty {
+          <li class="muted">Sem turnos marcados.</li>
+        }
+      </ul>
+    </div>
+  </div>
+
+  @if (isManager()) {
+    @if (overview(); as o) {
+      <div class="tiles" role="list">
+        <div class="tile card" role="listitem">
+          <span class="value">{{ o.onDutyNow }}</span
+          ><span>em turno agora</span>
+        </div>
+        <div class="tile card" role="listitem">
+          <span class="value">{{ o.shiftsToday }}</span
+          ><span>turnos hoje</span>
+        </div>
+        <div class="tile card" [class.alert-tile]="o.absentToday > 0" role="listitem">
+          <span class="value">{{ o.absentToday }}</span
+          ><span>faltas</span>
+        </div>
+        <div class="tile card" role="listitem">
+          <span class="value">{{ o.lateToday }}</span
+          ><span>atrasos</span>
+        </div>
+        <a class="tile card" routerLink="leaves" role="listitem">
+          <span class="value">{{ o.pendingLeaves }}</span
+          ><span>pedidos por decidir</span>
+        </a>
+        <div class="tile card" role="listitem">
+          <span class="value">{{ o.onLeaveToday }}</span
+          ><span>ausentes hoje</span>
+        </div>
+      </div>
+    }
+    <div class="card table-card">
+      <h2 class="table-title">Assiduidade de hoje</h2>
+      @if (daily(); as list) {
+        @if (list.length === 0) {
+          <p class="empty">Sem turnos hoje.</p>
+        } @else {
+          <div class="table-scroll">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">Profissional</th>
+                  <th scope="col">Turno</th>
+                  <th scope="col">Entrada</th>
+                  <th scope="col">Saída</th>
+                  <th scope="col">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of list; track p.shift.id) {
+                  <tr>
+                    <td>{{ p.shift.userName }}</td>
+                    <td>
+                      {{ shiftLabels[p.shift.type] }}
+                      <span class="subtext"
+                        >{{ p.shift.startsAt | date: 'HH:mm' }}–{{
+                          p.shift.endsAt | date: 'HH:mm'
+                        }}</span
+                      >
+                    </td>
+                    <td>{{ p.attendance ? (p.attendance.clockIn | date: 'HH:mm') : '—' }}</td>
+                    <td>
+                      {{ p.attendance?.clockOut ? (p.attendance!.clockOut | date: 'HH:mm') : '—' }}
+                    </td>
+                    <td>
+                      <span class="badge presence-{{ p.state }}">{{
+                        presenceLabels[p.state]
+                      }}</span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      } @else {
+        <p class="empty" role="status">A carregar…</p>
+      }
+    </div>
+  }
+</section>

@@ -1,0 +1,189 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <a class="btn-link back" routerLink="/hr">← Recursos humanos</a>
+      <h1>Folgas e férias</h1>
+    </div>
+  </header>
+
+  @if (message(); as m) {
+    <div class="alert alert-success" role="status">{{ m }}</div>
+  }
+  @if (error(); as e) {
+    <div class="alert alert-error" role="alert">
+      {{ e }}
+      @if (conflict(); as c) {
+        <div class="form-actions">
+          <button
+            class="btn btn-secondary"
+            type="button"
+            (click)="conflict.set(null); error.set(null)"
+          >
+            Voltar
+          </button>
+          <button
+            class="btn btn-primary"
+            type="button"
+            [disabled]="busy()"
+            (click)="decide(c, true, true)"
+          >
+            Aprovar e cancelar os turnos
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  @if (isManager()) {
+    <div class="card table-card">
+      <h2>Por decidir</h2>
+      @if (pending().length === 0) {
+        <p class="empty">Nenhum pedido pendente.</p>
+      } @else {
+        <div class="table-scroll">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Profissional</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Período</th>
+                <th scope="col">Nota</th>
+                <th scope="col"><span class="visually-hidden">Decisão</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of pending(); track l.id) {
+                <tr>
+                  <td>{{ l.userName }}</td>
+                  <td>
+                    {{ types[l.type] }}
+                    @if (l.reason) {
+                      <span class="subtext">{{ l.reason }}</span>
+                    }
+                  </td>
+                  <td>
+                    {{ l.startDate | date: 'dd/MM' }}–{{ l.endDate | date: 'dd/MM/yyyy' }}
+                    <span class="subtext">{{ l.days }} dia(s)</span>
+                  </td>
+                  <td>
+                    <input
+                      [name]="'note-' + l.id"
+                      [(ngModel)]="notes[l.id]"
+                      maxlength="300"
+                      aria-label="Nota da decisão"
+                    />
+                  </td>
+                  <td class="actions">
+                    @if (l.userId !== myId()) {
+                      <button
+                        class="btn btn-small btn-primary"
+                        type="button"
+                        [disabled]="busy()"
+                        (click)="decide(l, true)"
+                      >
+                        Aprovar
+                      </button>
+                      <button
+                        class="btn btn-small btn-secondary"
+                        type="button"
+                        [disabled]="busy()"
+                        (click)="decide(l, false)"
+                      >
+                        Recusar
+                      </button>
+                    } @else {
+                      <span class="muted">O seu pedido</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+  <form class="card" (ngSubmit)="request()">
+    <h2>Pedir ausência</h2>
+    <div class="grid">
+      <label class="field">
+        <span>Tipo</span>
+        <select name="type" [(ngModel)]="form.type">
+          @for (t of typeKeys; track t) {
+            <option [value]="t">{{ types[t] }}</option>
+          }
+        </select>
+      </label>
+      <label class="field"
+        ><span>De</span><input type="date" name="start" [(ngModel)]="form.startDate"
+      /></label>
+      <label class="field"
+        ><span>Até (inclusive)</span
+        ><input type="date" name="end" [min]="form.startDate" [(ngModel)]="form.endDate"
+      /></label>
+      <label class="field span-2"
+        ><span>Motivo (opcional)</span
+        ><input name="reason" [(ngModel)]="form.reason" maxlength="500"
+      /></label>
+    </div>
+    <div class="form-actions">
+      <button
+        class="btn btn-primary"
+        type="submit"
+        [disabled]="busy() || !form.startDate || !form.endDate"
+      >
+        Enviar pedido
+      </button>
+    </div>
+  </form>
+
+  <div class="card table-card">
+    <h2>Os meus pedidos</h2>
+    @if (mine().length === 0) {
+      <p class="empty">Ainda não fez pedidos.</p>
+    } @else {
+      <div class="table-scroll">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Tipo</th>
+              <th scope="col">Período</th>
+              <th scope="col">Estado</th>
+              <th scope="col"><span class="visually-hidden">Acções</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (l of mine(); track l.id) {
+              <tr>
+                <td>{{ types[l.type] }}</td>
+                <td>
+                  {{ l.startDate | date: 'dd/MM' }}–{{ l.endDate | date: 'dd/MM/yyyy' }}
+                  <span class="subtext">{{ l.days }} dia(s)</span>
+                </td>
+                <td>
+                  <span class="badge leave-{{ l.status }}">{{ statuses[l.status] }}</span>
+                  @if (l.decisionNote) {
+                    <span class="subtext">{{ l.decisionNote }}</span>
+                  }
+                </td>
+                <td class="actions">
+                  @if (canCancel(l)) {
+                    <button
+                      class="btn btn-small btn-secondary"
+                      type="button"
+                      [disabled]="busy()"
+                      (click)="cancel(l)"
+                    >
+                      Cancelar
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</section>

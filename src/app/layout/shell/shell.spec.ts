@@ -50,7 +50,12 @@ function render(roles: Role[], hospitalName: string | null) {
 
 describe('Shell', () => {
   it('o farmacêutico vê prescrições e farmácia', () => {
-    expect(render(['PHARMACIST'], 'HCL').links).toEqual(['Início', 'Prescrições', 'Farmácia']);
+    expect(render(['PHARMACIST'], 'HCL').links).toEqual([
+      'Início',
+      'Prescrições',
+      'Farmácia',
+      'Recursos humanos',
+    ]);
   });
 
   it('quem trabalha num hospital tem o sino de notificações', () => {
@@ -77,6 +82,7 @@ describe('Shell', () => {
       'Laboratório',
       'Farmácia',
       'Financeiro',
+      'Recursos humanos',
       'Utilizadores',
       'Auditoria',
     ]);
@@ -94,6 +100,7 @@ describe('Shell', () => {
       'Prescrições',
       'Laboratório',
       'Farmácia',
+      'Recursos humanos',
     ]);
   });
 });

@@ -115,6 +115,12 @@ export const routes: Routes = [
           import('./features/financial/financial.routes').then((m) => m.FINANCIAL_ROUTES),
       },
       {
+        path: 'hr',
+        canActivate: [roleGuard],
+        data: { roles: ACCESS.staff },
+        loadChildren: () => import('./features/hr/hr.routes').then((m) => m.HR_ROUTES),
+      },
+      {
         path: 'audit',
         title: 'Auditoria · Ngola Health',
         canActivate: [roleGuard],

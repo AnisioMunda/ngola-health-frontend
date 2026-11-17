@@ -69,6 +69,12 @@ export const APP_AREAS: readonly AppArea[] = [
     roles: ACCESS.financeRead,
   },
   {
+    label: 'Recursos humanos',
+    path: '/hr',
+    description: 'O meu ponto, escala, folgas e férias.',
+    roles: ACCESS.staff,
+  },
+  {
     label: 'Hospitais',
     path: '/hospitals',
     description: 'Instituições registadas na plataforma.',

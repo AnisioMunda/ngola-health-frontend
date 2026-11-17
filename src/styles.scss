@@ -655,3 +655,30 @@ a.alerts-link {
   background: var(--color-danger-soft);
   color: var(--color-danger);
 }
+
+/* Recursos humanos */
+.badge.leave-APPROVED,
+.badge.presence-PRESENT,
+.badge.presence-ON_DUTY {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.badge.leave-PENDING,
+.badge.presence-LATE {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.badge.leave-REJECTED,
+.badge.presence-ABSENT {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.badge.leave-CANCELLED,
+.badge.presence-UPCOMING,
+.badge.presence-ON_LEAVE {
+  background: var(--color-bg);
+  color: var(--color-muted);
+}

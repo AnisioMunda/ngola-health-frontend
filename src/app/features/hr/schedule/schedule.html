@@ -1,0 +1,161 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <a class="btn-link back" routerLink="/hr">← Recursos humanos</a>
+      <h1>Escala</h1>
+    </div>
+    @if (canManage()) {
+      <div class="header-actions">
+        <button
+          class="btn btn-secondary"
+          type="button"
+          [disabled]="busy()"
+          (click)="copyToNextWeek()"
+        >
+          Copiar para a semana seguinte
+        </button>
+      </div>
+    }
+  </header>
+
+  <div class="filters card">
+    <button
+      class="btn btn-secondary btn-small"
+      type="button"
+      (click)="shift(-1)"
+      aria-label="Semana anterior"
+    >
+      ←
+    </button>
+    <strong aria-live="polite">Semana de {{ week() | date: 'dd/MM/yyyy' }}</strong>
+    <button
+      class="btn btn-secondary btn-small"
+      type="button"
+      (click)="shift(1)"
+      aria-label="Semana seguinte"
+    >
+      →
+    </button>
+    <label class="check-inline">
+      <input
+        type="checkbox"
+        name="onlyScheduled"
+        [ngModel]="onlyScheduled()"
+        (ngModelChange)="onlyScheduled.set($event)"
+      />
+      Só quem tem turnos
+    </label>
+  </div>
+
+  @if (message(); as m) {
+    <div class="alert alert-success" role="status">{{ m }}</div>
+  }
+  @if (skipped().length > 0) {
+    <div class="alert alert-warning" role="status">
+      <p>Não copiados:</p>
+      <ul>
+        @for (s of skipped(); track s) {
+          <li>{{ s }}</li>
+        }
+      </ul>
+    </div>
+  }
+  @if (error(); as e) {
+    <div class="alert alert-error" role="alert">{{ e }}</div>
+  }
+
+  <div class="card table-card">
+    <div class="table-scroll">
+      <table class="table grid-table">
+        <thead>
+          <tr>
+            <th scope="col">Profissional</th>
+            @for (d of days(); track d) {
+              <th scope="col">{{ d | date: 'EEE dd/MM' }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.person.id) {
+            <tr>
+              <th scope="row">{{ row.person.fullName }}</th>
+              @for (cell of row.cells; track $index; let i = $index) {
+                <td
+                  [class.free]="cell.length === 0 && canManage()"
+                  (dblclick)="prefill(row.person.id, days()[i])"
+                >
+                  @for (s of cell; track s.id) {
+                    <div class="chip shift-{{ s.type }}">
+                      <span>{{ labels[s.type] }}</span>
+                      <small>{{ s.startsAt | date: 'HH:mm' }}–{{ s.endsAt | date: 'HH:mm' }}</small>
+                      @if (canManage()) {
+                        <button
+                          type="button"
+                          class="chip-x"
+                          [attr.aria-label]="'Cancelar turno de ' + row.person.fullName"
+                          (click)="cancel(s)"
+                        >
+                          ×
+                        </button>
+                      }
+                    </div>
+                  }
+                </td>
+              }
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="empty">Sem turnos nesta semana.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  @if (canManage()) {
+    <form class="card" (ngSubmit)="create()">
+      <h2>Marcar turno</h2>
+      <p class="muted small">
+        Dica: duplo clique num dia da tabela preenche o profissional e a data.
+      </p>
+      <div class="grid">
+        <label class="field">
+          <span>Profissional</span>
+          <select name="userId" [(ngModel)]="form.userId">
+            <option value="">Seleccione…</option>
+            @for (p of staff(); track p.id) {
+              <option [value]="p.id">{{ p.fullName }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          <span>Tipo</span>
+          <select name="type" [ngModel]="form.type" (ngModelChange)="setType($event)">
+            @for (t of typeKeys; track t) {
+              <option [value]="t">{{ labels[t] }}</option>
+            }
+          </select>
+        </label>
+        <label class="field"
+          ><span>Data</span><input type="date" name="date" [(ngModel)]="form.date"
+        /></label>
+        <label class="field"
+          ><span>Início</span><input type="time" name="start" [(ngModel)]="form.startTime"
+        /></label>
+        <label class="field"
+          ><span>Fim (antes do início = dia seguinte)</span
+          ><input type="time" name="end" [(ngModel)]="form.endTime"
+        /></label>
+        <label class="field"
+          ><span>Notas</span><input name="notes" [(ngModel)]="form.notes" maxlength="300"
+        /></label>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit" [disabled]="busy() || !form.userId">
+          Marcar turno
+        </button>
+      </div>
+    </form>
+  }
+</section>
