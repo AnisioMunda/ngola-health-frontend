@@ -21,7 +21,6 @@ import { NotificationBell } from '../../notifications/notification-bell/notifica
         <a routerLink="appointments" routerLinkActive="active">Consultas</a>
         <a routerLink="results" routerLinkActive="active">Resultados</a>
         <a routerLink="prescriptions" routerLinkActive="active">Receitas</a>
-        <a routerLink="invoices" routerLinkActive="active">Facturas</a>
       </nav>
       <div class="account">
         <span class="who">{{ user()?.fullName }}</span>

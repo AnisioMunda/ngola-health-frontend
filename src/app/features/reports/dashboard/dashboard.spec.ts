@@ -47,15 +47,7 @@ const data: DashboardData = {
     abnormalPercent: 22,
   },
   pharmacy: { lowStock: 3, expiringIn30Days: 2, expiredWithBalance: 0 },
-  finance: {
-    invoiced: 1500000,
-    credited: 0,
-    net: 1500000,
-    received: 1200000,
-    outstanding: 300000,
-    documents: 60,
-  },
-  daily: [{ date: '2026-11-18', episodes: 2, admissions: 1, triage: 1, revenue: 50000 }],
+  daily: [{ date: '2026-11-18', episodes: 2, admissions: 1, triage: 1 }],
 };
 
 describe('Dashboard', () => {

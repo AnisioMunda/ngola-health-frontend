@@ -68,10 +68,6 @@ export const ACCESS = {
   bedKeep: ['ADMIN', 'MANAGER', 'NURSE'],
   admit: ['DOCTOR'],
   bedTransfer: ['DOCTOR', 'NURSE'],
-  financeRead: ['ADMIN', 'MANAGER', 'FINANCIAL', 'RECEPTIONIST'],
-  billing: ['ADMIN', 'FINANCIAL', 'RECEPTIONIST'],
-  financeSupervise: ['ADMIN', 'FINANCIAL'],
-  priceManage: ['ADMIN', 'FINANCIAL'],
   staff: [
     'ADMIN',
     'MANAGER',
@@ -85,5 +81,4 @@ export const ACCESS = {
   hrManage: ['ADMIN', 'MANAGER'],
   equipmentManage: ['ADMIN', 'MANAGER'],
   reportsRead: ['ADMIN', 'MANAGER'],
-  financialReports: ['ADMIN', 'MANAGER', 'FINANCIAL'],
 } as const satisfies Record<string, readonly Role[]>;

@@ -1,4 +1,4 @@
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -14,17 +14,16 @@ import { AppointmentCard } from '../components/appointment-card';
 import { ResultRow } from '../components/result-row';
 import {
   PortalAppointment,
-  PortalInvoice,
   PortalLabRequest,
   PortalPrescription,
   PortalProfile,
 } from '../data/portal.model';
 import { PortalService } from '../data/portal.service';
 
-/** Início do portal: próxima consulta, últimos resultados, receitas por levantar e contas por pagar. */
+/** Início do portal: próxima consulta, últimos resultados, e receitas por levantar. */
 @Component({
   selector: 'app-portal-home',
-  imports: [RouterLink, DatePipe, CurrencyPipe, AppointmentCard, ResultRow],
+  imports: [RouterLink, DatePipe, AppointmentCard, ResultRow],
   template: `
     <section class="page">
       @if (profile(); as p) {
@@ -68,11 +67,6 @@ import { PortalService } from '../data/portal.service';
           <p class="big">{{ toCollect() }}</p>
           <a routerLink="prescriptions">Ver receitas</a>
         </section>
-        <section class="card">
-          <h2>Por pagar</h2>
-          <p class="big">{{ owed() | currency: 'AOA' }}</p>
-          <a routerLink="invoices">Ver facturas</a>
-        </section>
       </div>
     </section>
   `,
@@ -101,7 +95,6 @@ export class PortalHome implements OnInit {
   protected readonly appointments = signal<PortalAppointment[]>([]);
   protected readonly results = signal<PortalLabRequest[]>([]);
   protected readonly prescriptions = signal<PortalPrescription[]>([]);
-  protected readonly invoices = signal<PortalInvoice[]>([]);
   protected readonly error = signal<string | null>(null);
 
   protected readonly firstName = computed(() => this.profile()?.fullName.split(' ')[0] ?? '');
@@ -119,11 +112,6 @@ export class PortalHome implements OnInit {
         (p) => p.status === 'ACTIVE' || p.status === 'PARTIALLY_DISPENSED',
       ).length,
   );
-  protected readonly owed = computed(() =>
-    this.invoices()
-      .filter((i) => i.documentType === 'FT')
-      .reduce((sum, i) => sum + i.balance, 0),
-  );
 
   ngOnInit(): void {
     const fail = (err: unknown) => this.error.set(toApiError(err).message);
@@ -131,6 +119,5 @@ export class PortalHome implements OnInit {
     this.portal.appointments().subscribe({ next: (a) => this.appointments.set(a), error: fail });
     this.portal.labResults().subscribe({ next: (r) => this.results.set(r), error: fail });
     this.portal.prescriptions().subscribe({ next: (p) => this.prescriptions.set(p), error: fail });
-    this.portal.invoices().subscribe({ next: (i) => this.invoices.set(i), error: fail });
   }
 }

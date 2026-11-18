@@ -84,18 +84,16 @@ describe('Activate', () => {
 describe('PortalAccessCard', () => {
   function render(roles: Role[], hasAccount = false) {
     const service = {
-      status: vi
-        .fn()
-        .mockReturnValue(
-          of({
-            hasAccount,
-            accountActive: hasAccount,
-            username: hasAccount ? 'ana.portal' : null,
-            email: null,
-            lastLoginAt: null,
-            pendingCodeExpiresAt: null,
-          }),
-        ),
+      status: vi.fn().mockReturnValue(
+        of({
+          hasAccount,
+          accountActive: hasAccount,
+          username: hasAccount ? 'ana.portal' : null,
+          email: null,
+          lastLoginAt: null,
+          pendingCodeExpiresAt: null,
+        }),
+      ),
       issueCode: vi
         .fn()
         .mockReturnValue(of({ code: 'K7M2Q-9XPR4', expiresAt: '2026-11-21T10:00:00Z' })),
@@ -135,18 +133,16 @@ describe('PortalAccessCard', () => {
 describe('PortalHome e ResultRow', () => {
   it('mostra a próxima consulta, o valor por pagar e destaca resultados alterados', () => {
     const service = {
-      me: vi
-        .fn()
-        .mockReturnValue(
-          of({
-            fullName: 'Ana Silva',
-            recordNumber: '000001',
-            birthDate: '1990-05-01',
-            hospitalName: 'HCL',
-            phone: null,
-            email: null,
-          }),
-        ),
+      me: vi.fn().mockReturnValue(
+        of({
+          fullName: 'Ana Silva',
+          recordNumber: '000001',
+          birthDate: '1990-05-01',
+          hospitalName: 'HCL',
+          phone: null,
+          email: null,
+        }),
+      ),
       appointments: vi.fn().mockReturnValue(
         of([
           {
@@ -173,55 +169,29 @@ describe('PortalHome e ResultRow', () => {
           },
         ]),
       ),
-      labResults: vi
-        .fn()
-        .mockReturnValue(
-          of([
-            {
-              id: 'l1',
-              number: 'LAB-2026-000001',
-              requestedAt: '2026-11-10T10:00:00Z',
-              requestedByName: 'Dr. Rui',
-              status: 'IN_ANALYSIS',
-              pending: 1,
-              results: [
-                {
-                  testName: 'Hemoglobina',
-                  value: '10.5',
-                  unit: 'g/dL',
-                  reference: '12–16',
-                  flag: 'LOW',
-                  validatedAt: '2026-11-10T12:00:00Z',
-                },
-              ],
-            },
-          ]),
-        ),
-      prescriptions: vi.fn().mockReturnValue(of([])),
-      invoices: vi.fn().mockReturnValue(
+      labResults: vi.fn().mockReturnValue(
         of([
           {
-            id: 'i1',
-            documentType: 'FT',
-            number: 'FT 2026/000001',
-            status: 'PARTIALLY_PAID',
-            issuedAt: '2026-11-01T10:00:00Z',
-            total: 10000,
-            balance: 6000,
-            dueDate: null,
-          },
-          {
-            id: 'i2',
-            documentType: 'NC',
-            number: 'NC 2026/000001',
-            status: 'ISSUED',
-            issuedAt: '2026-11-02T10:00:00Z',
-            total: 2500,
-            balance: 0,
-            dueDate: null,
+            id: 'l1',
+            number: 'LAB-2026-000001',
+            requestedAt: '2026-11-10T10:00:00Z',
+            requestedByName: 'Dr. Rui',
+            status: 'IN_ANALYSIS',
+            pending: 1,
+            results: [
+              {
+                testName: 'Hemoglobina',
+                value: '10.5',
+                unit: 'g/dL',
+                reference: '12–16',
+                flag: 'LOW',
+                validatedAt: '2026-11-10T12:00:00Z',
+              },
+            ],
           },
         ]),
       ),
+      prescriptions: vi.fn().mockReturnValue(of([])),
     };
     TestBed.configureTestingModule({
       imports: [PortalHome, ResultRow],
@@ -238,6 +208,6 @@ describe('PortalHome e ResultRow', () => {
     expect(el.querySelector('app-appointment-card')?.textContent).toContain('Dra. Eva');
     expect(el.textContent).toContain('Abaixo da referência');
     expect(el.textContent).toContain('1 exame(s) ainda por concluir');
-    expect(el.textContent?.replace(/\s/g, ' ')).toMatch(/6.000,00\s?Kz|Kz\s?6.000,00/);
+    expect(el.textContent).not.toContain('Por pagar');
   });
 });

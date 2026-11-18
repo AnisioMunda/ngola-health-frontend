@@ -29,11 +29,6 @@ export const PORTAL_ROUTES: Routes = [
         loadComponent: () =>
           import('./prescriptions/prescriptions').then((m) => m.PortalPrescriptions),
       },
-      {
-        path: 'invoices',
-        title: 'Facturas · O meu portal',
-        loadComponent: () => import('./invoices/invoices').then((m) => m.PortalInvoices),
-      },
     ],
   },
 ];

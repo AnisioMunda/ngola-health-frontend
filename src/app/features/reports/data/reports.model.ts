@@ -39,17 +39,7 @@ export interface Dashboard {
     abnormalPercent: number | null;
   };
   pharmacy: { lowStock: number; expiringIn30Days: number; expiredWithBalance: number };
-  finance: FinanceStats;
-  daily: { date: string; episodes: number; admissions: number; triage: number; revenue: number }[];
-}
-
-export interface FinanceStats {
-  invoiced: number;
-  credited: number;
-  net: number;
-  received: number;
-  outstanding: number;
-  documents: number;
+  daily: { date: string; episodes: number; admissions: number; triage: number }[];
 }
 
 export interface WardOccupancy {
@@ -70,22 +60,6 @@ export interface OccupancyReport {
   days: number;
   wards: WardOccupancy[];
   total: WardOccupancy;
-}
-
-export interface Amount {
-  key: string;
-  amount: number;
-  count: number;
-}
-
-export interface FinancialReport {
-  from: string;
-  to: string;
-  summary: FinanceStats;
-  byPaymentMethod: Amount[];
-  byCategory: Amount[];
-  topServices: Amount[];
-  daily: { date: string; invoiced: number; received: number }[];
 }
 
 export const EPISODE_TYPE_LABELS: Record<string, string> = {
@@ -111,24 +85,4 @@ export const PRIORITY_COLORS: Record<string, string> = {
   YELLOW: 'var(--prio-YELLOW)',
   GREEN: 'var(--prio-GREEN)',
   BLUE: 'var(--prio-BLUE)',
-};
-
-export const METHOD_LABELS: Record<string, string> = {
-  CASH: 'Numerário',
-  CARD: 'Cartão (TPA)',
-  MULTICAIXA_EXPRESS: 'Multicaixa Express',
-  TRANSFER: 'Transferência',
-  CHEQUE: 'Cheque',
-};
-
-export const CATEGORY_LABELS: Record<string, string> = {
-  CONSULTATION: 'Consultas',
-  EXAM: 'Exames',
-  LAB: 'Laboratório',
-  IMAGING: 'Imagiologia',
-  PROCEDURE: 'Procedimentos',
-  SURGERY: 'Cirurgia',
-  ACCOMMODATION: 'Internamento',
-  PHARMACY: 'Farmácia',
-  OTHER: 'Outros',
 };

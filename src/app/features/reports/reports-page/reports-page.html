@@ -2,36 +2,12 @@
   <header class="page-header">
     <div>
       <h1>Relatórios</h1>
+      <p class="muted">Ocupação das enfermarias no período.</p>
     </div>
     <div class="header-actions">
       <button class="btn btn-secondary" type="button" (click)="download()">Exportar CSV</button>
     </div>
   </header>
-
-  <div class="tabs" role="tablist" aria-label="Relatórios">
-    @if (canOccupancy()) {
-      <button
-        class="btn btn-secondary btn-small"
-        type="button"
-        role="tab"
-        [attr.aria-selected]="tab() === 'occupancy'"
-        (click)="tab.set('occupancy')"
-      >
-        Ocupação
-      </button>
-    }
-    @if (canFinancial()) {
-      <button
-        class="btn btn-secondary btn-small"
-        type="button"
-        role="tab"
-        [attr.aria-selected]="tab() === 'financial'"
-        (click)="tab.set('financial')"
-      >
-        Financeiro
-      </button>
-    }
-  </div>
 
   <app-period-picker [(period)]="period" />
 
@@ -39,184 +15,96 @@
     <div class="alert alert-error" role="alert">{{ e }}</div>
   }
 
-  @if (tab() === 'occupancy') {
-    @if (occupancy(); as r) {
-      <div [class.refreshing]="loading()">
-        <div class="card table-card">
-          <div class="table-scroll">
-            <table class="table">
-              <caption class="visually-hidden">
-                Ocupação por enfermaria
-              </caption>
-              <thead>
+  @if (occupancy(); as r) {
+    <div [class.refreshing]="loading()">
+      <div class="card table-card">
+        <div class="table-scroll">
+          <table class="table">
+            <caption class="visually-hidden">
+              Ocupação por enfermaria
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Enfermaria</th>
+                <th scope="col" class="num">Camas</th>
+                <th scope="col" class="num">Ocupadas agora</th>
+                <th scope="col" class="num">Entradas</th>
+                <th scope="col" class="num">Altas</th>
+                <th scope="col" class="num">Dias-cama</th>
+                <th scope="col" class="num">Ocupação</th>
+                <th scope="col" class="num">Demora média</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (w of r.wards; track w.wardId) {
                 <tr>
-                  <th scope="col">Enfermaria</th>
-                  <th scope="col" class="num">Camas</th>
-                  <th scope="col" class="num">Ocupadas agora</th>
-                  <th scope="col" class="num">Entradas</th>
-                  <th scope="col" class="num">Altas</th>
-                  <th scope="col" class="num">Dias-cama</th>
-                  <th scope="col" class="num">Ocupação</th>
-                  <th scope="col" class="num">Demora média</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (w of r.wards; track w.wardId) {
-                  <tr>
-                    <td>{{ w.wardName }}</td>
-                    <td class="num">{{ w.beds }}</td>
-                    <td class="num">{{ w.occupiedNow }}</td>
-                    <td class="num">{{ w.admissions }}</td>
-                    <td class="num">{{ w.discharges }}</td>
-                    <td class="num">{{ w.bedDays | number: '1.1-1' }}</td>
-                    <td class="num">
-                      {{
-                        w.occupancyPercent !== null
-                          ? (w.occupancyPercent | number: '1.1-1') + '%'
-                          : '—'
-                      }}
-                    </td>
-                    <td class="num">
-                      {{
-                        w.avgLengthOfStayDays !== null
-                          ? (w.avgLengthOfStayDays | number: '1.1-1') + ' d'
-                          : '—'
-                      }}
-                    </td>
-                  </tr>
-                } @empty {
-                  <tr>
-                    <td colspan="8" class="empty">Sem enfermarias activas.</td>
-                  </tr>
-                }
-                <tr class="total">
-                  <td>Total</td>
-                  <td class="num">{{ r.total.beds }}</td>
-                  <td class="num">{{ r.total.occupiedNow }}</td>
-                  <td class="num">{{ r.total.admissions }}</td>
-                  <td class="num">{{ r.total.discharges }}</td>
-                  <td class="num">{{ r.total.bedDays | number: '1.1-1' }}</td>
+                  <td>{{ w.wardName }}</td>
+                  <td class="num">{{ w.beds }}</td>
+                  <td class="num">{{ w.occupiedNow }}</td>
+                  <td class="num">{{ w.admissions }}</td>
+                  <td class="num">{{ w.discharges }}</td>
+                  <td class="num">{{ w.bedDays | number: '1.1-1' }}</td>
                   <td class="num">
                     {{
-                      r.total.occupancyPercent !== null
-                        ? (r.total.occupancyPercent | number: '1.1-1') + '%'
+                      w.occupancyPercent !== null
+                        ? (w.occupancyPercent | number: '1.1-1') + '%'
                         : '—'
                     }}
                   </td>
                   <td class="num">
                     {{
-                      r.total.avgLengthOfStayDays !== null
-                        ? (r.total.avgLengthOfStayDays | number: '1.1-1') + ' d'
+                      w.avgLengthOfStayDays !== null
+                        ? (w.avgLengthOfStayDays | number: '1.1-1') + ' d'
                         : '—'
                     }}
                   </td>
                 </tr>
-              </tbody>
-            </table>
-          </div>
-          <p class="muted total">
-            Ocupação = dias-cama ocupados ÷ (camas × {{ r.days }} dias). As transferências contam o
-            tempo em cada enfermaria.
-          </p>
-        </div>
-        <div class="card">
-          <app-bar-list
-            title="Taxa de ocupação por enfermaria"
-            categoryLabel="Enfermaria"
-            valueLabel="Ocupação"
-            valueFormat="percent"
-            [items]="occupancyBars()"
-          />
-        </div>
-      </div>
-    } @else if (!error()) {
-      <p class="empty" role="status">A calcular…</p>
-    }
-  } @else {
-    @if (financial(); as r) {
-      <div [class.refreshing]="loading()">
-        <div class="tiles">
-          <div class="tile card">
-            <span class="tile-label">Facturado</span
-            ><span class="tile-value">{{ money(r.summary.invoiced) }}</span>
-          </div>
-          <div class="tile card">
-            <span class="tile-label">Notas de crédito</span
-            ><span class="tile-value">{{ money(r.summary.credited) }}</span>
-          </div>
-          <div class="tile card">
-            <span class="tile-label">Líquido</span
-            ><span class="tile-value">{{ money(r.summary.net) }}</span>
-          </div>
-          <div class="tile card">
-            <span class="tile-label">Recebido</span
-            ><span class="tile-value">{{ money(r.summary.received) }}</span>
-          </div>
-          <div class="tile card">
-            <span class="tile-label">Em dívida (hoje)</span
-            ><span class="tile-value">{{ money(r.summary.outstanding) }}</span>
-          </div>
-        </div>
-        <div class="card">
-          <app-column-chart
-            title="Recebido por dia"
-            valueLabel="Recebido"
-            valueFormat="money"
-            [points]="receivedDaily()"
-          />
-        </div>
-        <div class="charts">
-          <div class="card">
-            <app-bar-list
-              title="Recebido por meio de pagamento"
-              categoryLabel="Meio"
-              valueLabel="Valor"
-              valueFormat="money"
-              [items]="byMethod()"
-            />
-          </div>
-          <div class="card">
-            <app-bar-list
-              title="Facturado por categoria"
-              categoryLabel="Categoria"
-              valueLabel="Valor"
-              valueFormat="money"
-              [items]="byCategory()"
-            />
-          </div>
-        </div>
-        <div class="card table-card">
-          <div class="table-scroll">
-            <table class="table">
-              <caption class="chart-caption">
-                Actos mais facturados
-              </caption>
-              <thead>
+              } @empty {
                 <tr>
-                  <th scope="col">Acto</th>
-                  <th scope="col" class="num">Quantidade</th>
-                  <th scope="col" class="num">Valor</th>
+                  <td colspan="8" class="empty">Sem enfermarias activas.</td>
                 </tr>
-              </thead>
-              <tbody>
-                @for (s of r.topServices; track s.key) {
-                  <tr>
-                    <td>{{ s.key }}</td>
-                    <td class="num">{{ s.count | number }}</td>
-                    <td class="num">{{ money(s.amount) }}</td>
-                  </tr>
-                } @empty {
-                  <tr>
-                    <td colspan="3" class="empty">Sem documentos no período.</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+              }
+              <tr class="total">
+                <td>Total</td>
+                <td class="num">{{ r.total.beds }}</td>
+                <td class="num">{{ r.total.occupiedNow }}</td>
+                <td class="num">{{ r.total.admissions }}</td>
+                <td class="num">{{ r.total.discharges }}</td>
+                <td class="num">{{ r.total.bedDays | number: '1.1-1' }}</td>
+                <td class="num">
+                  {{
+                    r.total.occupancyPercent !== null
+                      ? (r.total.occupancyPercent | number: '1.1-1') + '%'
+                      : '—'
+                  }}
+                </td>
+                <td class="num">
+                  {{
+                    r.total.avgLengthOfStayDays !== null
+                      ? (r.total.avgLengthOfStayDays | number: '1.1-1') + ' d'
+                      : '—'
+                  }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+        <p class="muted total">
+          Ocupação = dias-cama ocupados ÷ (camas × {{ r.days }} dias). As transferências contam o
+          tempo em cada enfermaria.
+        </p>
       </div>
-    } @else if (!error()) {
-      <p class="empty" role="status">A calcular…</p>
-    }
+      <div class="card">
+        <app-bar-list
+          title="Taxa de ocupação por enfermaria"
+          categoryLabel="Enfermaria"
+          valueLabel="Ocupação"
+          valueFormat="percent"
+          [items]="occupancyBars()"
+        />
+      </div>
+    </div>
+  } @else if (!error()) {
+    <p class="empty" role="status">A calcular…</p>
   }
 </section>

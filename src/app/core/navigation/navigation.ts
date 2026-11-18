@@ -17,14 +17,14 @@ export const APP_AREAS: readonly AppArea[] = [
   {
     label: 'Dashboard',
     path: '/dashboard',
-    description: 'Indicadores do hospital: atendimento, ocupação, laboratório e finanças.',
+    description: 'Indicadores do hospital: atendimento, ocupação, laboratório e farmácia.',
     roles: ACCESS.reportsRead,
   },
   {
     label: 'Relatórios',
     path: '/reports',
-    description: 'Ocupação por enfermaria e financeiro, com exportação CSV.',
-    roles: ACCESS.financialReports,
+    description: 'Ocupação por enfermaria, com exportação CSV.',
+    roles: ACCESS.reportsRead,
   },
   {
     label: 'Pacientes',
@@ -73,12 +73,6 @@ export const APP_AREAS: readonly AppArea[] = [
     path: '/pharmacy',
     description: 'Catálogo, stock, lotes e dispensa.',
     roles: ACCESS.pharmacyRead,
-  },
-  {
-    label: 'Financeiro',
-    path: '/financial',
-    description: 'Facturas, recibos, caixa do dia e tabela de preços.',
-    roles: ACCESS.financeRead,
   },
   {
     label: 'Recursos humanos',

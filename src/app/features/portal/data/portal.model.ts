@@ -48,17 +48,6 @@ export interface PortalPrescription {
   items: { medication: string; dosage: string; status: 'PENDING' | 'DISPENSED' }[];
 }
 
-export interface PortalInvoice {
-  id: string;
-  documentType: 'FT' | 'FR' | 'NC';
-  number: string;
-  status: string;
-  issuedAt: string;
-  total: number;
-  balance: number;
-  dueDate: string | null;
-}
-
 export interface PortalStatus {
   hasAccount: boolean;
   accountActive: boolean;
@@ -86,20 +75,6 @@ export const FLAG_LABELS: Record<string, string> = {
   LOW: 'Abaixo da referência',
   HIGH: 'Acima da referência',
   ABNORMAL: 'Alterado',
-};
-
-export const DOCUMENT_LABELS: Record<PortalInvoice['documentType'], string> = {
-  FT: 'Factura',
-  FR: 'Factura-recibo',
-  NC: 'Nota de crédito',
-};
-
-export const INVOICE_STATUS: Record<string, string> = {
-  ISSUED: 'Por pagar',
-  PARTIALLY_PAID: 'Paga em parte',
-  PAID: 'Paga',
-  CANCELLED: 'Anulada',
-  CREDITED: 'Creditada',
 };
 
 export const PRESCRIPTION_STATUS: Record<string, string> = {

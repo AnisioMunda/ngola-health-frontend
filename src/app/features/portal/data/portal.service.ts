@@ -5,7 +5,6 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
   PortalAppointment,
-  PortalInvoice,
   PortalLabRequest,
   PortalPrescription,
   PortalProfile,
@@ -51,10 +50,6 @@ export class PortalService {
 
   prescriptions(): Observable<PortalPrescription[]> {
     return this.http.get<PortalPrescription[]>(`${this.api}/portal/prescriptions`);
-  }
-
-  invoices(): Observable<PortalInvoice[]> {
-    return this.http.get<PortalInvoice[]>(`${this.api}/portal/invoices`);
   }
 
   // ---------- Pessoal ----------

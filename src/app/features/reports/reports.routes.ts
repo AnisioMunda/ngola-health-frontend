@@ -18,7 +18,7 @@ export const REPORT_ROUTES: Routes = [
     path: '',
     title: 'Relatórios · Ngola Health',
     canActivate: [roleGuard],
-    data: { roles: ACCESS.financialReports },
+    data: { roles: ACCESS.reportsRead },
     loadComponent: () => import('./reports-page/reports-page').then((m) => m.ReportsPage),
   },
 ];

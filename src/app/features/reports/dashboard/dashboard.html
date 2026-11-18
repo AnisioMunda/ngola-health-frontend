@@ -133,24 +133,8 @@
         </div>
       </div>
 
-      <h2 class="section">Financeiro e farmácia</h2>
+      <h2 class="section">Farmácia</h2>
       <div class="tiles">
-        <div class="tile card">
-          <span class="tile-label">Facturado (líquido)</span>
-          <span class="tile-value">{{ money(d.finance.net) }}</span>
-          <span class="tile-sub"
-            >{{ d.finance.documents | number }} documentos ·
-            {{ money(d.finance.credited) }} creditados</span
-          >
-        </div>
-        <div class="tile card">
-          <span class="tile-label">Recebido</span>
-          <span class="tile-value">{{ money(d.finance.received) }}</span>
-        </div>
-        <div class="tile card">
-          <span class="tile-label">Em dívida (hoje)</span>
-          <span class="tile-value">{{ money(d.finance.outstanding) }}</span>
-        </div>
         <a class="tile card link" routerLink="/pharmacy/alerts">
           <span class="tile-label">Farmácia (hoje)</span>
           <span class="tile-value">{{ d.pharmacy.lowStock }}</span>
@@ -159,16 +143,6 @@
             {{ d.pharmacy.expiredWithBalance }} expirados</span
           >
         </a>
-      </div>
-      <div class="charts single">
-        <div class="card">
-          <app-column-chart
-            title="Facturação por dia (FT e FR emitidas)"
-            valueLabel="Facturado"
-            valueFormat="money"
-            [points]="revenueDaily()"
-          />
-        </div>
       </div>
     </div>
   } @else if (!error()) {

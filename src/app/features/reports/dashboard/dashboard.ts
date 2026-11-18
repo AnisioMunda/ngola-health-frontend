@@ -12,7 +12,6 @@ import { RouterLink } from '@angular/router';
 
 import { toApiError } from '../../../core/http/api-error';
 import { BarItem, BarList } from '../../../shared/charts/bar-list';
-import { formatValue } from '../../../shared/charts/chart-format';
 import { ColumnChart } from '../../../shared/charts/column-chart';
 import {
   Dashboard as DashboardData,
@@ -38,13 +37,9 @@ export class Dashboard {
   protected readonly data = signal<DashboardData | null>(null);
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly money = (v: number) => formatValue(v, 'money');
 
   protected readonly episodesDaily = computed(
     () => this.data()?.daily.map((d) => ({ date: d.date, value: d.episodes })) ?? [],
-  );
-  protected readonly revenueDaily = computed(
-    () => this.data()?.daily.map((d) => ({ date: d.date, value: d.revenue })) ?? [],
   );
   protected readonly triageByPriority = computed<BarItem[]>(() =>
     Object.entries(this.data()?.triage.byPriority ?? {}).map(([k, v]) => ({

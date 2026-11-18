@@ -69,7 +69,6 @@ export class EpisodeDetail implements OnInit {
     () => this.inProgress() && this.isDoctor() && !this.isInpatient(),
   );
   protected readonly canAudit = computed(() => this.auth.hasAnyRole(ACCESS.audit));
-  protected readonly canBill = computed(() => this.auth.hasAnyRole(ACCESS.billing));
   protected readonly canStart = computed(() => this.status() === 'SCHEDULED' && this.isCare());
   protected readonly inProgress = computed(() => this.status() === 'IN_PROGRESS');
   protected readonly canEditVitals = computed(() => this.inProgress() && this.isCare());

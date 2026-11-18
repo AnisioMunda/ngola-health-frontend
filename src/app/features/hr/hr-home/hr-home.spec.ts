@@ -29,18 +29,16 @@ function render(roles: Role[], current: Attendance | null) {
   const service = {
     current: vi.fn().mockReturnValue(of(current)),
     myShifts: vi.fn().mockReturnValue(of([])),
-    overview: vi
-      .fn()
-      .mockReturnValue(
-        of({
-          onDutyNow: 3,
-          shiftsToday: 5,
-          absentToday: 1,
-          lateToday: 0,
-          pendingLeaves: 2,
-          onLeaveToday: 1,
-        }),
-      ),
+    overview: vi.fn().mockReturnValue(
+      of({
+        onDutyNow: 3,
+        shiftsToday: 5,
+        absentToday: 1,
+        lateToday: 0,
+        pendingLeaves: 2,
+        onLeaveToday: 1,
+      }),
+    ),
     daily: vi.fn().mockReturnValue(of([])),
     clockIn: vi.fn().mockReturnValue(of(open)),
     clockOut: vi

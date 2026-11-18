@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
-import { Dashboard, FinancialReport, OccupancyReport } from './reports.model';
+import { Dashboard, OccupancyReport } from './reports.model';
 
 export interface Period {
   from: string;
@@ -23,13 +23,9 @@ export class ReportsService {
     return this.http.get<OccupancyReport>(`${this.baseUrl}/occupancy`, { params: params(period) });
   }
 
-  financial(period: Period): Observable<FinancialReport> {
-    return this.http.get<FinancialReport>(`${this.baseUrl}/financial`, { params: params(period) });
-  }
-
   /** CSV com o token de sessão (o interceptor junta-o); devolve o ficheiro para descarregar. */
-  csv(report: 'occupancy' | 'financial', period: Period): Observable<Blob> {
-    return this.http.get(`${this.baseUrl}/${report}.csv`, {
+  occupancyCsv(period: Period): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/occupancy.csv`, {
       params: params(period),
       responseType: 'blob',
     });

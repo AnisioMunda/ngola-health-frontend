@@ -84,7 +84,6 @@ describe('Shell', () => {
       'Prescrições',
       'Laboratório',
       'Farmácia',
-      'Financeiro',
       'Recursos humanos',
       'Equipamentos',
       'Utilizadores',

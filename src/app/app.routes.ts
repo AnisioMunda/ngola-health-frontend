@@ -126,13 +126,6 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'financial',
-        canActivate: [roleGuard],
-        data: { roles: ACCESS.financeRead },
-        loadChildren: () =>
-          import('./features/financial/financial.routes').then((m) => m.FINANCIAL_ROUTES),
-      },
-      {
         path: 'hr',
         canActivate: [roleGuard],
         data: { roles: ACCESS.staff },

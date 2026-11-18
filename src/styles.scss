@@ -635,29 +635,6 @@ a.alerts-link {
   color: var(--color-muted);
 }
 
-/* Documentos de facturação */
-.badge.inv-DRAFT {
-  background: var(--color-bg);
-  color: var(--color-muted);
-}
-
-.badge.inv-ISSUED,
-.badge.inv-PARTIALLY_PAID {
-  background: var(--color-warning-soft);
-  color: var(--color-warning);
-}
-
-.badge.inv-PAID {
-  background: var(--color-success-soft);
-  color: var(--color-success);
-}
-
-.badge.inv-CANCELLED,
-.badge.inv-CREDITED {
-  background: var(--color-danger-soft);
-  color: var(--color-danger);
-}
-
 /* Recursos humanos */
 .badge.leave-APPROVED,
 .badge.presence-PRESENT,
