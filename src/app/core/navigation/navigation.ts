@@ -15,6 +15,18 @@ export interface AppArea {
 
 export const APP_AREAS: readonly AppArea[] = [
   {
+    label: 'Dashboard',
+    path: '/dashboard',
+    description: 'Indicadores do hospital: atendimento, ocupação, laboratório e finanças.',
+    roles: ACCESS.reportsRead,
+  },
+  {
+    label: 'Relatórios',
+    path: '/reports',
+    description: 'Ocupação por enfermaria e financeiro, com exportação CSV.',
+    roles: ACCESS.financialReports,
+  },
+  {
     label: 'Pacientes',
     path: '/patients',
     description: 'Pesquisar, registar e consultar fichas.',

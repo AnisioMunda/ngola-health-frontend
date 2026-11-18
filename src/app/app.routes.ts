@@ -128,6 +128,16 @@ export const routes: Routes = [
           import('./features/equipment/equipment.routes').then((m) => m.EQUIPMENT_ROUTES),
       },
       {
+        path: 'dashboard',
+        loadChildren: () =>
+          import('./features/reports/reports.routes').then((m) => m.DASHBOARD_ROUTES),
+      },
+      {
+        path: 'reports',
+        loadChildren: () =>
+          import('./features/reports/reports.routes').then((m) => m.REPORT_ROUTES),
+      },
+      {
         path: 'audit',
         title: 'Auditoria · Ngola Health',
         canActivate: [roleGuard],

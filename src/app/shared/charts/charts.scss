@@ -1,0 +1,146 @@
+:host {
+  display: block;
+}
+
+figure {
+  margin: 0;
+}
+
+.chart-title {
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+
+/* Lista de barras */
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  display: grid;
+  grid-template-columns: minmax(6rem, 10rem) 1fr;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.2rem 0;
+  border-radius: var(--radius);
+
+  &:hover,
+  &:focus-visible {
+    background: var(--color-bg);
+    outline: none;
+  }
+}
+
+.label {
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.track {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.bar {
+  display: block;
+  height: 14px;
+  min-width: 2px;
+  border-radius: 0 4px 4px 0;
+}
+
+.value {
+  font-size: 0.85rem;
+  color: var(--color-text);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Colunas */
+.plot {
+  position: relative;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+.grid {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.tick {
+  font-size: 11px;
+  fill: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.hit {
+  fill: transparent;
+}
+
+.col {
+  fill: var(--chart-series-1);
+
+  &.active {
+    opacity: 0.75;
+  }
+}
+
+.crosshair {
+  stroke: var(--color-muted);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.tooltip {
+  position: absolute;
+  top: 0;
+  transform: translate(-50%, -100%);
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem 0.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  pointer-events: none;
+
+  span {
+    color: var(--color-muted);
+  }
+}
+
+/* Tabela alternativa */
+.table-view {
+  margin-top: var(--space-2);
+  font-size: 0.85rem;
+
+  summary {
+    cursor: pointer;
+    color: var(--color-primary);
+  }
+
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.muted {
+  color: var(--color-muted);
+}

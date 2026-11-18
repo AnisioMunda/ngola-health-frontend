@@ -74,6 +74,8 @@ describe('Shell', () => {
     const { links, account } = render(['ADMIN'], 'HCL');
     expect(links).toEqual([
       'Início',
+      'Dashboard',
+      'Relatórios',
       'Pacientes',
       'Agendamento',
       'Triagem',

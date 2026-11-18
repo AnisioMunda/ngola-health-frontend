@@ -1,0 +1,177 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p class="muted">Indicadores do hospital no período escolhido.</p>
+    </div>
+    <div class="header-actions">
+      <a class="btn btn-secondary" routerLink="/reports">Relatórios</a>
+    </div>
+  </header>
+
+  <app-period-picker [(period)]="period" />
+
+  @if (error(); as e) {
+    <div class="alert alert-error" role="alert">{{ e }}</div>
+  }
+
+  @if (data(); as d) {
+    <div [class.refreshing]="loading()" [attr.aria-busy]="loading()">
+      <h2 class="section">Atendimento</h2>
+      <div class="tiles">
+        <div class="tile card">
+          <span class="tile-label">Episódios</span>
+          <span class="tile-value">{{ d.episodes.total | number }}</span>
+          <span class="tile-sub">{{ d.episodes.completed | number }} concluídos</span>
+        </div>
+        <div class="tile card">
+          <span class="tile-label">Doentes novos</span>
+          <span class="tile-value">{{ d.patients.newInPeriod | number }}</span>
+          <span class="tile-sub">{{ d.patients.active | number }} activos no total</span>
+        </div>
+        <div class="tile card">
+          <span class="tile-label">Triagem no tempo-alvo</span>
+          <span class="tile-value">{{
+            d.triage.withinTargetPercent !== null
+              ? (d.triage.withinTargetPercent | number: '1.0-1') + '%'
+              : '—'
+          }}</span>
+          <span class="tile-sub"
+            >{{ d.triage.total | number }} triados · espera média
+            {{ d.triage.avgWaitMinutes ?? '—' }} min</span
+          >
+        </div>
+        <div class="tile card">
+          <span class="tile-label">Consultas marcadas</span>
+          <span class="tile-value">{{ d.appointments.total | number }}</span>
+          <span class="tile-sub"
+            >faltas
+            {{
+              d.appointments.noShowPercent !== null ? d.appointments.noShowPercent + '%' : '—'
+            }}</span
+          >
+        </div>
+      </div>
+
+      <div class="charts">
+        <div class="card">
+          <app-column-chart
+            title="Episódios por dia"
+            valueLabel="Episódios"
+            [points]="episodesDaily()"
+          />
+        </div>
+        <div class="card">
+          <app-bar-list
+            title="Episódios por tipo"
+            categoryLabel="Tipo"
+            valueLabel="Episódios"
+            [items]="episodesByType()"
+          />
+        </div>
+        <div class="card">
+          <app-bar-list
+            title="Triagem por prioridade"
+            categoryLabel="Prioridade"
+            valueLabel="Doentes"
+            [items]="triageByPriority()"
+          />
+        </div>
+        <div class="card">
+          <app-bar-list
+            title="Espera média até à chamada (min)"
+            categoryLabel="Prioridade"
+            valueLabel="Minutos"
+            valueFormat="decimal"
+            [items]="waitByPriority()"
+          />
+        </div>
+      </div>
+
+      <h2 class="section">Internamento e laboratório</h2>
+      <div class="tiles">
+        <div class="tile card">
+          <span class="tile-label">Ocupação hoje</span>
+          <span class="tile-value">{{
+            d.inpatient.occupancyPercent !== null
+              ? (d.inpatient.occupancyPercent | number: '1.0-1') + '%'
+              : '—'
+          }}</span>
+          <span class="tile-sub"
+            >{{ d.inpatient.occupiedBeds }} de {{ d.inpatient.activeBeds }} camas</span
+          >
+        </div>
+        <div class="tile card">
+          <span class="tile-label">Internamentos / altas</span>
+          <span class="tile-value"
+            >{{ d.inpatient.admissions | number }} / {{ d.inpatient.discharges | number }}</span
+          >
+          <span class="tile-sub"
+            >demora média {{ d.inpatient.avgLengthOfStayDays ?? '—' }} dias ·
+            {{ d.inpatient.deaths }} óbito(s)</span
+          >
+        </div>
+        <div class="tile card">
+          <span class="tile-label">Pedidos de exames</span>
+          <span class="tile-value">{{ d.lab.requests | number }}</span>
+          <span class="tile-sub"
+            >{{ d.lab.completed | number }} concluídos · {{ d.lab.abnormalPercent ?? '—' }}%
+            alterados</span
+          >
+        </div>
+        <div class="tile card">
+          <span class="tile-label">Tempo de resposta do laboratório</span>
+          <span class="tile-value">{{
+            d.lab.avgTurnaroundHours !== null ? d.lab.avgTurnaroundHours + ' h' : '—'
+          }}</span>
+          <span class="tile-sub"
+            >urgentes
+            {{
+              d.lab.urgentAvgTurnaroundHours !== null ? d.lab.urgentAvgTurnaroundHours + ' h' : '—'
+            }}</span
+          >
+        </div>
+      </div>
+
+      <h2 class="section">Financeiro e farmácia</h2>
+      <div class="tiles">
+        <div class="tile card">
+          <span class="tile-label">Facturado (líquido)</span>
+          <span class="tile-value">{{ money(d.finance.net) }}</span>
+          <span class="tile-sub"
+            >{{ d.finance.documents | number }} documentos ·
+            {{ money(d.finance.credited) }} creditados</span
+          >
+        </div>
+        <div class="tile card">
+          <span class="tile-label">Recebido</span>
+          <span class="tile-value">{{ money(d.finance.received) }}</span>
+        </div>
+        <div class="tile card">
+          <span class="tile-label">Em dívida (hoje)</span>
+          <span class="tile-value">{{ money(d.finance.outstanding) }}</span>
+        </div>
+        <a class="tile card link" routerLink="/pharmacy/alerts">
+          <span class="tile-label">Farmácia (hoje)</span>
+          <span class="tile-value">{{ d.pharmacy.lowStock }}</span>
+          <span class="tile-sub"
+            >abaixo do mínimo · {{ d.pharmacy.expiringIn30Days }} lotes a expirar ·
+            {{ d.pharmacy.expiredWithBalance }} expirados</span
+          >
+        </a>
+      </div>
+      <div class="charts single">
+        <div class="card">
+          <app-column-chart
+            title="Facturação por dia (FT e FR emitidas)"
+            valueLabel="Facturado"
+            valueFormat="money"
+            [points]="revenueDaily()"
+          />
+        </div>
+      </div>
+    </div>
+  } @else if (!error()) {
+    <p class="empty" role="status">A calcular indicadores…</p>
+  }
+</section>
