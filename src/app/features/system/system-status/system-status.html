@@ -1,0 +1,198 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Estado do sistema</h1>
+      <p class="muted">
+        Contadores desde o último arranque do servidor. Actualiza-se sozinho a cada 30 segundos.
+      </p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" type="button" (click)="load()" [disabled]="loading()">
+        {{ loading() ? 'A actualizar…' : 'Actualizar' }}
+      </button>
+    </div>
+  </header>
+
+  @if (error(); as e) {
+    <div class="alert alert-error" role="alert">{{ e }}</div>
+  }
+
+  @if (data(); as d) {
+    <div class="tiles">
+      <div class="tile card">
+        <span class="tile-label">Base de dados</span>
+        @if (d.database.up) {
+          <span class="tile-value"><span class="badge badge-success">Disponível</span></span>
+          <span class="tile-sub">responde em {{ d.database.latencyMs }} ms</span>
+        } @else {
+          <span class="tile-value"><span class="badge badge-danger">Indisponível</span></span>
+        }
+      </div>
+      <div class="tile card">
+        <span class="tile-label">Em funcionamento há</span>
+        <span class="tile-value">{{ uptime(d.application.uptimeSeconds) }}</span>
+        <span class="tile-sub">desde {{ d.application.startedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+      <div class="tile card">
+        <span class="tile-label">Sessões activas</span>
+        <span class="tile-value">{{ d.activeSessions | number }}</span>
+        <span class="tile-sub">pessoal e portal do paciente</span>
+      </div>
+      <div class="tile card">
+        <span class="tile-label">Versão</span>
+        <span class="tile-value">{{ d.application.version ?? '—' }}</span>
+        <span class="tile-sub"
+          >Java {{ d.application.javaVersion }}
+          @if (d.application.builtAt) {
+            · compilada {{ d.application.builtAt | date: 'dd/MM/yyyy HH:mm' }}
+          }
+        </span>
+      </div>
+    </div>
+
+    <h2 class="section">Pedidos e acessos</h2>
+    <div class="tiles">
+      <div class="tile card">
+        <span class="tile-label">Pedidos à API</span>
+        <span class="tile-value">{{ d.http.requests | number }}</span>
+        <span class="tile-sub"
+          >tempo médio
+          {{ d.http.meanMs !== null ? (d.http.meanMs | number: '1.0-1') + ' ms' : '—' }}
+        </span>
+      </div>
+      <div class="tile card" [class.alert-tile]="d.http.serverErrors > 0">
+        <span class="tile-label">Erros do servidor (5xx)</span>
+        <span class="tile-value">{{ d.http.serverErrors | number }}</span>
+        <span class="tile-sub"
+          >{{ errorRate() !== null ? (errorRate() | percent: '1.0-2') : '—' }} dos pedidos ·
+          {{ d.http.clientErrors | number }} recusados (4xx)</span
+        >
+      </div>
+      <div class="tile card">
+        <span class="tile-label">Logins com sucesso</span>
+        <span class="tile-value">{{ d.logins.success | number }}</span>
+      </div>
+      <div class="tile card" [class.alert-tile]="d.logins.locked > 0">
+        <span class="tile-label">Logins falhados</span>
+        <span class="tile-value">{{ d.logins.failed | number }}</span>
+        <span class="tile-sub">{{ d.logins.locked | number }} em contas bloqueadas</span>
+      </div>
+    </div>
+
+    <h2 class="section">Recursos</h2>
+    <div class="tiles">
+      <div class="tile card">
+        <span class="tile-label">Memória (heap)</span>
+        <span class="tile-value">{{ bytes(d.jvm.heapUsedBytes) }}</span>
+        @if (heapRatio(); as r) {
+          <div
+            class="meter"
+            role="meter"
+            aria-label="Memória usada"
+            [attr.aria-valuenow]="r * 100 | number: '1.0-0'"
+            aria-valuemin="0"
+            aria-valuemax="100"
+          >
+            <span [style.width.%]="r * 100" [class.high]="r > 0.85"></span>
+          </div>
+          <span class="tile-sub">{{ r | percent }} de {{ bytes(d.jvm.heapMaxBytes) }}</span>
+        }
+      </div>
+      <div class="tile card">
+        <span class="tile-label">Disco livre</span>
+        <span class="tile-value">{{ bytes(d.jvm.diskFreeBytes) }}</span>
+        @if (diskRatio(); as r) {
+          <div
+            class="meter"
+            role="meter"
+            aria-label="Disco usado"
+            [attr.aria-valuenow]="r * 100 | number: '1.0-0'"
+            aria-valuemin="0"
+            aria-valuemax="100"
+          >
+            <span [style.width.%]="r * 100" [class.high]="r > 0.9"></span>
+          </div>
+          <span class="tile-sub">{{ r | percent }} usado de {{ bytes(d.jvm.diskTotalBytes) }}</span>
+        }
+      </div>
+      <div class="tile card">
+        <span class="tile-label">Ligações à base de dados</span>
+        <span class="tile-value">{{ d.database.poolActive ?? '—' }} em uso</span>
+        <span class="tile-sub"
+          >{{ d.database.poolIdle ?? '—' }} livres · máx. {{ d.database.poolMax ?? '—' }}
+          @if (d.database.poolPending) {
+            · {{ d.database.poolPending }} à espera
+          }
+        </span>
+      </div>
+      <div class="tile card">
+        <span class="tile-label">Processador</span>
+        <span class="tile-value">{{
+          d.jvm.processCpu !== null ? (d.jvm.processCpu | percent: '1.0-1') : '—'
+        }}</span>
+        <span class="tile-sub">{{ d.jvm.threads }} threads</span>
+      </div>
+    </div>
+
+    <h2 class="section">Tarefas agendadas</h2>
+    <div class="card table-card">
+      <div class="table-scroll">
+        <table class="table">
+          <caption class="visually-hidden">
+            Tarefas agendadas
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Tarefa</th>
+              <th scope="col">Horário (cron)</th>
+              <th scope="col">Próxima execução</th>
+              <th scope="col">Última execução</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (j of d.jobs; track j.name) {
+              <tr>
+                <td>{{ j.label }}</td>
+                <td>
+                  <code>{{ j.cron ?? '—' }}</code>
+                </td>
+                <td>{{ j.nextRun ? (j.nextRun | date: 'dd/MM/yyyy HH:mm') : '—' }}</td>
+                <td>
+                  @if (j.lastStatus) {
+                    <span
+                      class="badge"
+                      [class.badge-success]="j.lastStatus === 'SUCCESS'"
+                      [class.badge-danger]="j.lastStatus === 'ERROR'"
+                      >{{ jobStatus[j.lastStatus] }}</span
+                    >
+                    {{ j.lastRunAt | date: 'dd/MM HH:mm' }}
+                    @if (j.lastError) {
+                      <span class="muted">({{ j.lastError }})</span>
+                    }
+                  } @else {
+                    <span class="muted">Ainda não correu desde o arranque</span>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="empty">Sem tarefas agendadas.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="muted footnote">
+      Migrações aplicadas: {{ d.database.migrations | number }}
+      @if (d.database.lastMigration) {
+        · última <code>{{ d.database.lastMigration }}</code> em
+        {{ d.database.lastMigrationAt | date: 'dd/MM/yyyy HH:mm' }}
+      }
+      · consultado às {{ d.generatedAt | date: 'HH:mm:ss' }}
+    </p>
+  } @else if (!error()) {
+    <p class="empty" role="status">A carregar…</p>
+  }
+</section>

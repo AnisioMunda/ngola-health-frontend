@@ -38,6 +38,7 @@ export const STAFF_ROLES: Role[] = [
 /** Quem acede a cada área (espelha as regras do backend, que são as que valem). */
 export const ACCESS = {
   hospitals: ['SUPER_ADMIN'],
+  system: ['SUPER_ADMIN'],
   usersRead: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'],
   usersManage: ['SUPER_ADMIN', 'ADMIN'],
   audit: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'],

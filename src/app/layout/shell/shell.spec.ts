@@ -66,7 +66,13 @@ describe('Shell', () => {
   it('o administrador da plataforma vê hospitais e utilizadores', () => {
     const { links, account, bell } = render(['SUPER_ADMIN'], null);
     expect(bell).toBeNull();
-    expect(links).toEqual(['Início', 'Hospitais', 'Utilizadores', 'Auditoria']);
+    expect(links).toEqual([
+      'Início',
+      'Hospitais',
+      'Utilizadores',
+      'Auditoria',
+      'Estado do sistema',
+    ]);
     expect(account).toContain('Plataforma');
   });
 

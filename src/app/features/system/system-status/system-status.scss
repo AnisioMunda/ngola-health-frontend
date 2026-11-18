@@ -1,0 +1,62 @@
+.section {
+  font-size: 1.05rem;
+  margin: var(--space-5, 1.5rem) 0 var(--space-3);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  &.alert-tile {
+    border-color: var(--color-danger);
+  }
+}
+
+.tile-label {
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
+
+.tile-value {
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.tile-sub {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+/* Barra de ocupação (memória, disco): fina, com o valor sempre escrito ao lado. */
+.meter {
+  height: 6px;
+  margin: var(--space-1, 0.25rem) 0;
+  border-radius: 3px;
+  background: var(--color-bg);
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    background: var(--chart-series-1, #0e8c62);
+
+    &.high {
+      background: var(--color-danger);
+    }
+  }
+}
+
+.footnote {
+  font-size: 0.85rem;
+  margin-top: var(--space-3);
+}

@@ -104,6 +104,12 @@ export const APP_AREAS: readonly AppArea[] = [
     description: 'Quem fez o quê, e quando.',
     roles: ACCESS.audit,
   },
+  {
+    label: 'Estado do sistema',
+    path: '/system',
+    description: 'Base de dados, memória, erros, logins e tarefas agendadas.',
+    roles: ACCESS.system,
+  },
 ];
 
 /** Áreas visíveis para um utilizador com estes perfis. */

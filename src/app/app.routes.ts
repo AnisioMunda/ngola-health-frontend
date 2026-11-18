@@ -55,6 +55,14 @@ export const routes: Routes = [
           import('./features/hospitals/hospitals.routes').then((m) => m.HOSPITAL_ROUTES),
       },
       {
+        path: 'system',
+        title: 'Estado do sistema · Ngola Health',
+        canActivate: [roleGuard],
+        data: { roles: ACCESS.system },
+        loadComponent: () =>
+          import('./features/system/system-status/system-status').then((m) => m.SystemStatusPage),
+      },
+      {
         path: 'users',
         canActivate: [roleGuard],
         data: { roles: ACCESS.usersRead },
