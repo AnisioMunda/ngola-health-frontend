@@ -121,6 +121,13 @@ export const routes: Routes = [
         loadChildren: () => import('./features/hr/hr.routes').then((m) => m.HR_ROUTES),
       },
       {
+        path: 'equipment',
+        canActivate: [roleGuard],
+        data: { roles: ACCESS.staff },
+        loadChildren: () =>
+          import('./features/equipment/equipment.routes').then((m) => m.EQUIPMENT_ROUTES),
+      },
+      {
         path: 'audit',
         title: 'Auditoria · Ngola Health',
         canActivate: [roleGuard],

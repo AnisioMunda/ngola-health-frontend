@@ -1,0 +1,219 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Equipamentos</h1>
+      <p class="muted">Qualquer profissional pode reportar uma avaria na ficha do equipamento.</p>
+    </div>
+    @if (canManage()) {
+      <div class="header-actions">
+        <a class="btn btn-primary" routerLink="new">Novo equipamento</a>
+      </div>
+    }
+  </header>
+
+  @if (overview(); as o) {
+    <div class="tiles">
+      <div class="tile card">
+        <span class="value">{{ o.operational }}</span
+        ><span>operacionais</span>
+      </div>
+      <div class="tile card">
+        <span class="value">{{ o.outOfService }}</span
+        ><span>fora de serviço</span>
+      </div>
+      <div class="tile card">
+        <span class="value">{{ o.underMaintenance }}</span
+        ><span>em manutenção</span>
+      </div>
+      <div class="tile card">
+        <span class="value">{{ o.openFaults }}</span
+        ><span>avarias abertas</span>
+      </div>
+      <div class="tile card">
+        <span class="value">{{ o.dueIn30Days }}</span
+        ><span>a vencer (30 dias)</span>
+      </div>
+    </div>
+  }
+
+  <div class="tabs" role="tablist" aria-label="Vistas">
+    <button
+      class="btn btn-secondary btn-small"
+      type="button"
+      role="tab"
+      [attr.aria-selected]="tab() === 'all'"
+      (click)="select('all')"
+    >
+      Inventário
+    </button>
+    <button
+      class="btn btn-secondary btn-small"
+      type="button"
+      role="tab"
+      [attr.aria-selected]="tab() === 'due'"
+      (click)="select('due')"
+    >
+      Manutenções a vencer
+    </button>
+    <button
+      class="btn btn-secondary btn-small"
+      type="button"
+      role="tab"
+      [attr.aria-selected]="tab() === 'faults'"
+      (click)="select('faults')"
+    >
+      Avarias abertas
+    </button>
+  </div>
+
+  @if (error(); as e) {
+    <div class="alert alert-error" role="alert">{{ e }}</div>
+  }
+
+  @if (tab() === 'all') {
+    <form class="filters card" role="search" (ngSubmit)="load()">
+      <label class="field"
+        ><span>Pesquisar</span
+        ><input name="search" [(ngModel)]="search" placeholder="Nome, código ou n.º de série"
+      /></label>
+      <label class="field"
+        ><span>Estado</span>
+        <select name="status" [(ngModel)]="status" (ngModelChange)="load()">
+          <option value="">Em uso</option>
+          @for (s of statusKeys; track s) {
+            <option [value]="s">{{ statuses[s] }}</option>
+          }
+        </select>
+      </label>
+      <label class="field"
+        ><span>Categoria</span>
+        <select name="category" [(ngModel)]="category" (ngModelChange)="load()">
+          <option value="">Todas</option>
+          @for (c of categoryKeys; track c) {
+            <option [value]="c">{{ categories[c] }}</option>
+          }
+        </select>
+      </label>
+      <button class="btn btn-secondary" type="submit">Pesquisar</button>
+    </form>
+  }
+
+  @if (tab() === 'faults') {
+    <div class="card table-card">
+      @if (faults(); as list) {
+        @if (list.length === 0) {
+          <p class="empty">Nenhuma avaria em aberto.</p>
+        } @else {
+          <div class="table-scroll">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">Equipamento</th>
+                  <th scope="col">Problema</th>
+                  <th scope="col">Reportada</th>
+                  <th scope="col"><span class="visually-hidden">Acções</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (f of list; track f.id) {
+                  <tr>
+                    <td>
+                      {{ f.equipmentName }} <code>{{ f.equipmentCode }}</code>
+                      @if (f.criticality === 'HIGH') {
+                        <span class="badge badge-danger">Crítico</span>
+                      }
+                    </td>
+                    <td>
+                      {{ f.description }}
+                      @if (f.outOfService) {
+                        <span class="subtext">Fora de serviço</span>
+                      }
+                    </td>
+                    <td>
+                      {{ f.reportedAt | date: 'dd/MM HH:mm'
+                      }}<span class="subtext">{{ f.reportedByName }}</span>
+                    </td>
+                    <td class="actions">
+                      <a class="btn btn-small btn-secondary" [routerLink]="[f.equipmentId]"
+                        >Abrir</a
+                      >
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      } @else {
+        <p class="empty" role="status">A carregar…</p>
+      }
+    </div>
+  } @else {
+    <div class="card table-card">
+      @if (items(); as list) {
+        @if (list.length === 0) {
+          <p class="empty">
+            {{ tab() === 'due' ? 'Nada a vencer nos próximos 30 dias.' : 'Nenhum equipamento.' }}
+          </p>
+        } @else {
+          <div class="table-scroll">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">Equipamento</th>
+                  <th scope="col">Localização</th>
+                  <th scope="col">Próx. manutenção</th>
+                  <th scope="col">Próx. calibração</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col"><span class="visually-hidden">Acções</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (e of list; track e.id) {
+                  <tr>
+                    <td>
+                      {{ e.name }} <code>{{ e.code }}</code>
+                      <span class="subtext"
+                        >{{ categories[e.category] }} · criticidade
+                        {{ criticality[e.criticality] }}</span
+                      >
+                    </td>
+                    <td>{{ e.wardName ?? e.location ?? '—' }}</td>
+                    <td>
+                      {{
+                        e.nextMaintenanceDate ? (e.nextMaintenanceDate | date: 'dd/MM/yyyy') : '—'
+                      }}
+                      @if (e.maintenanceOverdue) {
+                        <span class="badge badge-danger">Em atraso</span>
+                      }
+                    </td>
+                    <td>
+                      {{
+                        e.nextCalibrationDate ? (e.nextCalibrationDate | date: 'dd/MM/yyyy') : '—'
+                      }}
+                      @if (e.calibrationOverdue) {
+                        <span class="badge badge-danger">Em atraso</span>
+                      }
+                    </td>
+                    <td>
+                      <span class="badge eq-{{ e.status }}">{{ statuses[e.status] }}</span>
+                      @if (e.openFaults) {
+                        <span class="badge badge-warning">{{ e.openFaults }} avaria(s)</span>
+                      }
+                    </td>
+                    <td class="actions">
+                      <a class="btn btn-small btn-secondary" [routerLink]="[e.id]">Abrir</a>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="muted total">{{ total() }} equipamento(s).</p>
+        }
+      } @else {
+        <p class="empty" role="status">A carregar…</p>
+      }
+    </div>
+  }
+</section>

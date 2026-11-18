@@ -682,3 +682,27 @@ a.alerts-link {
   background: var(--color-bg);
   color: var(--color-muted);
 }
+
+/* Equipamentos */
+.badge.eq-OPERATIONAL,
+.badge.fault-RESOLVED {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.badge.eq-OUT_OF_SERVICE,
+.badge.fault-OPEN {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.badge.eq-UNDER_MAINTENANCE {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.badge.eq-RETIRED,
+.badge.fault-DISMISSED {
+  background: var(--color-bg);
+  color: var(--color-muted);
+}

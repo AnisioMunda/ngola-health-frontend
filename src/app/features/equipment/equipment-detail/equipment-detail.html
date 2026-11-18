@@ -1,0 +1,287 @@
+<section class="page narrow">
+  <a class="btn-link back" routerLink="/equipment">← Equipamentos</a>
+  @if (e(); as e) {
+    <header class="page-header">
+      <div>
+        <h1>
+          {{ e.name }} <code>{{ e.code }}</code>
+        </h1>
+        <span class="badge eq-{{ e.status }}">{{ statuses[e.status] }}</span>
+        @if (e.criticality === 'HIGH') {
+          <span class="badge badge-danger">Criticidade alta</span>
+        }
+      </div>
+      @if (!retired()) {
+        <div class="header-actions">
+          <button class="btn btn-danger" type="button" (click)="open('fault')">
+            Reportar avaria
+          </button>
+          @if (canManage()) {
+            @if (e.status !== 'UNDER_MAINTENANCE') {
+              <button
+                class="btn btn-secondary"
+                type="button"
+                [disabled]="busy()"
+                (click)="sendToMaintenance()"
+              >
+                Enviar para manutenção
+              </button>
+            }
+            <button class="btn btn-primary" type="button" (click)="open('maintenance')">
+              Registar manutenção
+            </button>
+            <a class="btn btn-secondary" [routerLink]="['/equipment', e.id, 'edit']">Editar</a>
+            <button class="btn btn-secondary" type="button" (click)="open('retire')">Abater</button>
+          }
+        </div>
+      }
+    </header>
+
+    @if (message(); as m) {
+      <div class="alert alert-success" role="status">{{ m }}</div>
+    }
+    @if (error(); as err) {
+      <div class="alert alert-error" role="alert">{{ err }}</div>
+    }
+
+    @switch (panel()) {
+      @case ('fault') {
+        <form class="card" (ngSubmit)="reportFault()">
+          <h2>Reportar avaria</h2>
+          <label class="field">
+            <span>O que se passa?</span>
+            <textarea
+              name="description"
+              [(ngModel)]="fault.description"
+              rows="3"
+              maxlength="1000"
+            ></textarea>
+          </label>
+          @if (e.criticality === 'HIGH') {
+            <p class="muted">Equipamento crítico: fica fora de serviço até ser reparado.</p>
+          } @else {
+            <label class="check-inline">
+              <input type="checkbox" name="oos" [(ngModel)]="fault.outOfService" /> Não pode ser
+              usado
+            </label>
+          }
+          <div class="form-actions">
+            <button class="btn btn-secondary" type="button" (click)="panel.set(null)">
+              Voltar
+            </button>
+            <button
+              class="btn btn-danger"
+              type="submit"
+              [disabled]="busy() || !fault.description.trim()"
+            >
+              Reportar
+            </button>
+          </div>
+        </form>
+      }
+      @case ('maintenance') {
+        <form class="card" (ngSubmit)="recordMaintenance()">
+          <h2>Registar manutenção</h2>
+          <div class="grid">
+            <label class="field">
+              <span>Tipo</span>
+              <select name="type" [(ngModel)]="m.type">
+                @for (t of typeKeys; track t) {
+                  <option [value]="t">{{ types[t] }}</option>
+                }
+              </select>
+            </label>
+            @if (m.type === 'CORRECTIVE' && openFaults().length > 0) {
+              <label class="field span-2">
+                <span>Avaria que resolve</span>
+                <select name="faultId" [(ngModel)]="m.faultId">
+                  <option value="">Nenhuma</option>
+                  @for (f of openFaults(); track f.id) {
+                    <option [value]="f.id">
+                      {{ f.reportedAt | date: 'dd/MM' }} — {{ f.description }}
+                    </option>
+                  }
+                </select>
+              </label>
+            }
+            <label class="field"
+              ><span>Data</span><input type="date" name="on" [(ngModel)]="m.performedOn"
+            /></label>
+            <label class="field span-2"
+              ><span>Feita por (técnico ou empresa)</span
+              ><input name="by" [(ngModel)]="m.performedBy" maxlength="200"
+            /></label>
+            <label class="field span-2"
+              ><span>Trabalho feito</span
+              ><textarea
+                name="desc"
+                [(ngModel)]="m.description"
+                rows="2"
+                maxlength="2000"
+              ></textarea>
+            </label>
+            <label class="field"
+              ><span>Peças substituídas</span
+              ><input name="parts" [(ngModel)]="m.partsReplaced" maxlength="500"
+            /></label>
+            <label class="field"
+              ><span>Custo (AOA)</span
+              ><input type="number" min="0" step="0.01" name="cost" [(ngModel)]="m.cost"
+            /></label>
+            <label class="field">
+              <span>Resultado</span>
+              <select name="result" [(ngModel)]="m.result">
+                <option value="PASSED">Funciona</option>
+                <option value="FAILED">Continua com problemas</option>
+              </select>
+            </label>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-secondary" type="button" (click)="panel.set(null)">
+              Voltar
+            </button>
+            <button
+              class="btn btn-primary"
+              type="submit"
+              [disabled]="busy() || !m.performedBy.trim() || !m.description.trim()"
+            >
+              Registar
+            </button>
+          </div>
+        </form>
+      }
+      @case ('retire') {
+        <form class="card" (ngSubmit)="retire()">
+          <p>
+            O abate é definitivo: o equipamento sai do inventário em uso (o histórico mantém-se).
+          </p>
+          <label class="field"
+            ><span>Motivo</span><input name="reason" [(ngModel)]="retireReason" maxlength="300"
+          /></label>
+          <div class="form-actions">
+            <button class="btn btn-secondary" type="button" (click)="panel.set(null)">
+              Voltar
+            </button>
+            <button
+              class="btn btn-danger"
+              type="submit"
+              [disabled]="busy() || !retireReason.trim()"
+            >
+              Abater
+            </button>
+          </div>
+        </form>
+      }
+    }
+
+    <div class="card">
+      <dl class="details">
+        <dt>Categoria</dt>
+        <dd>{{ categories[e.category] }} · criticidade {{ criticality[e.criticality] }}</dd>
+        <dt>Marca / modelo</dt>
+        <dd>
+          {{ e.brand ?? '—' }} {{ e.model ?? ''
+          }}{{ e.serialNumber ? ' · série ' + e.serialNumber : '' }}
+        </dd>
+        <dt>Localização</dt>
+        <dd>{{ e.wardName ?? e.location ?? '—' }}</dd>
+        <dt>Próxima manutenção</dt>
+        <dd>
+          {{ e.nextMaintenanceDate ? (e.nextMaintenanceDate | date: 'dd/MM/yyyy') : '—' }}
+          @if (e.maintenanceIntervalDays) {
+            <span class="muted">(a cada {{ e.maintenanceIntervalDays }} dias)</span>
+          }
+          @if (e.maintenanceOverdue) {
+            <span class="badge badge-danger">Em atraso</span>
+          }
+        </dd>
+        <dt>Próxima calibração</dt>
+        <dd>
+          {{ e.nextCalibrationDate ? (e.nextCalibrationDate | date: 'dd/MM/yyyy') : '—' }}
+          @if (e.calibrationIntervalDays) {
+            <span class="muted">(a cada {{ e.calibrationIntervalDays }} dias)</span>
+          }
+          @if (e.calibrationOverdue) {
+            <span class="badge badge-danger">Em atraso</span>
+          }
+        </dd>
+        <dt>Aquisição</dt>
+        <dd>
+          {{ e.purchaseDate ? (e.purchaseDate | date: 'dd/MM/yyyy') : '—' }}
+          {{ e.purchasePrice !== null ? '· ' + (e.purchasePrice | currency: 'AOA') : '' }}
+          @if (e.warrantyUntil) {
+            · garantia até {{ e.warrantyUntil | date: 'dd/MM/yyyy' }}
+            @if (e.underWarranty) {
+              <span class="badge badge-success">Em garantia</span>
+            }
+          }
+        </dd>
+        <dt>Custo de manutenção</dt>
+        <dd>{{ e.maintenanceCostTotal | currency: 'AOA' }}</dd>
+        @if (e.notes) {
+          <dt>Notas</dt>
+          <dd>{{ e.notes }}</dd>
+        }
+        @if (e.retiredAt) {
+          <dt>Abatido</dt>
+          <dd>
+            {{ e.retiredAt | date: 'dd/MM/yyyy' }} por {{ e.retiredByName }} —
+            {{ e.retirementReason }}
+          </dd>
+        }
+      </dl>
+    </div>
+
+    <div class="card">
+      <h2>Avarias</h2>
+      <ul class="history">
+        @for (f of e.faults; track f.id) {
+          <li>
+            <span class="badge fault-{{ f.status }}">{{ faultStatuses[f.status] }}</span>
+            {{ f.reportedAt | date: 'dd/MM/yyyy HH:mm' }} — {{ f.description }}
+            <span class="muted"
+              >({{ f.reportedByName }}{{ f.outOfService ? ', fora de serviço' : '' }})</span
+            >
+            @if (f.resolution) {
+              <div class="muted">→ {{ f.resolution }}</div>
+            }
+            @if (f.status === 'OPEN' && canManage()) {
+              <button
+                class="btn btn-small btn-secondary"
+                type="button"
+                [disabled]="busy()"
+                (click)="dismiss(f.id)"
+              >
+                Descartar
+              </button>
+            }
+          </li>
+        } @empty {
+          <li class="muted">Sem avarias.</li>
+        }
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Manutenções</h2>
+      <ul class="history">
+        @for (r of e.maintenance; track r.id) {
+          <li>
+            <strong>{{ r.performedOn | date: 'dd/MM/yyyy' }}</strong> · {{ types[r.type] }} ·
+            {{ r.result === 'PASSED' ? 'funciona' : 'com problemas' }} — {{ r.description }}
+            <span class="muted"
+              >({{ r.performedBy }}{{ r.cost !== null ? ', ' + (r.cost | currency: 'AOA') : ''
+              }}{{ r.partsReplaced ? ', peças: ' + r.partsReplaced : '' }})</span
+            >
+          </li>
+        } @empty {
+          <li class="muted">Sem manutenções registadas.</li>
+        }
+      </ul>
+    </div>
+  } @else if (error(); as err) {
+    <div class="alert alert-error" role="alert">{{ err }}</div>
+  } @else {
+    <p class="empty" role="status">A carregar…</p>
+  }
+</section>

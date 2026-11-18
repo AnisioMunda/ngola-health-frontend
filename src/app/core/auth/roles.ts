@@ -83,4 +83,5 @@ export const ACCESS = {
     'LAB_TECHNICIAN',
   ],
   hrManage: ['ADMIN', 'MANAGER'],
+  equipmentManage: ['ADMIN', 'MANAGER'],
 } as const satisfies Record<string, readonly Role[]>;

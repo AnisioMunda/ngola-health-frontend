@@ -55,6 +55,7 @@ describe('Shell', () => {
       'Prescrições',
       'Farmácia',
       'Recursos humanos',
+      'Equipamentos',
     ]);
   });
 
@@ -83,6 +84,7 @@ describe('Shell', () => {
       'Farmácia',
       'Financeiro',
       'Recursos humanos',
+      'Equipamentos',
       'Utilizadores',
       'Auditoria',
     ]);
@@ -101,6 +103,7 @@ describe('Shell', () => {
       'Laboratório',
       'Farmácia',
       'Recursos humanos',
+      'Equipamentos',
     ]);
   });
 });

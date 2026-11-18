@@ -75,6 +75,12 @@ export const APP_AREAS: readonly AppArea[] = [
     roles: ACCESS.staff,
   },
   {
+    label: 'Equipamentos',
+    path: '/equipment',
+    description: 'Inventário, avarias e manutenções.',
+    roles: ACCESS.staff,
+  },
+  {
     label: 'Hospitais',
     path: '/hospitals',
     description: 'Instituições registadas na plataforma.',
