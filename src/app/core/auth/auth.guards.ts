@@ -36,3 +36,15 @@ export function safeReturnUrl(value: string | null | undefined): string {
     ? value
     : '/';
 }
+
+/** Contas de doente: a área do pessoal não é para elas (vão para o portal). */
+export const staffGuard: CanActivateFn = () => {
+  const user = inject(AuthService).user();
+  return user?.roles.length === 1 && user.roles[0] === 'PATIENT'
+    ? inject(Router).createUrlTree(['/portal'])
+    : true;
+};
+
+/** O portal é só para contas de doente. */
+export const patientGuard: CanActivateFn = () =>
+  inject(AuthService).hasAnyRole(['PATIENT']) ? true : inject(Router).createUrlTree(['/']);

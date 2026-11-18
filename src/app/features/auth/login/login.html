@@ -45,6 +45,9 @@
         {{ submitting() ? 'A entrar…' : 'Entrar' }}
       </button>
     </form>
+    <p class="muted portal-link">
+      Doente com código do hospital? <a routerLink="/portal/activate">Activar a minha conta</a>
+    </p>
 
     @if (backendStatus() === 'DOWN') {
       <p class="alert alert-error small" role="status">O servidor está indisponível de momento.</p>

@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { PortalAccessCard } from '../../portal/access-card/portal-access-card';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -20,7 +21,7 @@ import { PatientService } from '../data/patient.service';
 
 @Component({
   selector: 'app-patient-detail',
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, PortalAccessCard],
   templateUrl: './patient-detail.html',
   styleUrl: './patient-detail.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

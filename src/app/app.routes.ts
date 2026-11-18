@@ -1,6 +1,13 @@
 import { Routes } from '@angular/router';
 
-import { authGuard, guestGuard, passwordChangedGuard, roleGuard } from './core/auth/auth.guards';
+import {
+  authGuard,
+  guestGuard,
+  passwordChangedGuard,
+  patientGuard,
+  roleGuard,
+  staffGuard,
+} from './core/auth/auth.guards';
 import { ACCESS } from './core/auth/roles';
 import { Shell } from './layout/shell/shell';
 
@@ -19,9 +26,20 @@ export const routes: Routes = [
       import('./features/auth/change-password/change-password').then((m) => m.ChangePassword),
   },
   {
+    path: 'portal/activate',
+    title: 'Activar conta · Portal do paciente',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/portal/activate/activate').then((m) => m.Activate),
+  },
+  {
+    path: 'portal',
+    canActivate: [authGuard, passwordChangedGuard, patientGuard],
+    loadChildren: () => import('./features/portal/portal.routes').then((m) => m.PORTAL_ROUTES),
+  },
+  {
     path: '',
     component: Shell,
-    canActivate: [authGuard, passwordChangedGuard],
+    canActivate: [authGuard, passwordChangedGuard, staffGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'home' },
       {
