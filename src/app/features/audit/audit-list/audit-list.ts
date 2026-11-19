@@ -14,7 +14,7 @@ import { Subscription } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { toApiError } from '../../../core/http/api-error';
-import { Page } from '../../../core/http/page';
+import { Page, PageTotalPipe } from '../../../core/http/page';
 import { Hospital } from '../../hospitals/data/hospital.model';
 import { HospitalService } from '../../hospitals/data/hospital.service';
 import { changeRows, dayStartIso, isEdit } from '../data/audit-format';
@@ -33,7 +33,7 @@ const PAGE_SIZE = 50;
 
 @Component({
   selector: 'app-audit-list',
-  imports: [FormsModule, DatePipe, RouterLink],
+  imports: [FormsModule, DatePipe, RouterLink, PageTotalPipe],
   templateUrl: './audit-list.html',
   styleUrl: './audit-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -199,7 +199,10 @@
             >
               Anterior
             </button>
-            <span>Página {{ page.page + 1 }} de {{ page.totalPages }}</span>
+            <span
+              >Página {{ page.page + 1 }} de {{ page.totalPages
+              }}{{ page.totalCapped ? '+' : '' }}</span
+            >
             <button
               class="btn btn-small btn-secondary"
               type="button"
@@ -210,7 +213,7 @@
             </button>
           </nav>
         }
-        <p class="muted total">{{ page.totalElements }} evento(s).</p>
+        <p class="muted total">{{ page | pageTotal }} evento(s).</p>
       }
     }
   </div>

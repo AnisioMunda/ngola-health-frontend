@@ -13,14 +13,14 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ACCESS } from '../../../core/auth/roles';
 import { toApiError } from '../../../core/http/api-error';
-import { Page } from '../../../core/http/page';
+import { Page, PageTotalPipe } from '../../../core/http/page';
 import { LAB_STATUS_LABELS, LabRequest } from '../data/lab.model';
 import { LabService } from '../data/lab.service';
 
 /** Lista de trabalho: pedidos por concluir, urgentes primeiro. */
 @Component({
   selector: 'app-lab-worklist',
-  imports: [FormsModule, RouterLink, DatePipe],
+  imports: [FormsModule, RouterLink, DatePipe, PageTotalPipe],
   template: `
     <section class="page">
       <header class="page-header">
@@ -95,7 +95,7 @@ import { LabService } from '../data/lab.service';
                 </tbody>
               </table>
             </div>
-            <p class="muted total">{{ page.totalElements }} pedido(s).</p>
+            <p class="muted total">{{ page | pageTotal }} pedido(s).</p>
           }
         } @else {
           <p class="empty" role="status">A carregar…</p>

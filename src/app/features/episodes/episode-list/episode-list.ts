@@ -14,7 +14,7 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ACCESS } from '../../../core/auth/roles';
 import { toApiError } from '../../../core/http/api-error';
-import { Page } from '../../../core/http/page';
+import { Page, PageTotalPipe } from '../../../core/http/page';
 import { dayStartIso } from '../../audit/data/audit-format';
 import { EpisodeStatus, EpisodeSummary, STATUS_LABELS, TYPE_LABELS } from '../data/episode.model';
 import { EpisodeService } from '../data/episode.service';
@@ -31,7 +31,7 @@ const VIEW_STATUSES: Record<StatusView, EpisodeStatus[] | undefined> = {
 /** Lista de trabalho: episódios abertos por ordem de hora; histórico do mais recente. */
 @Component({
   selector: 'app-episode-list',
-  imports: [FormsModule, RouterLink, DatePipe],
+  imports: [FormsModule, RouterLink, DatePipe, PageTotalPipe],
   templateUrl: './episode-list.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

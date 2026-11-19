@@ -12,14 +12,14 @@ import { RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { toApiError } from '../../../core/http/api-error';
-import { Page } from '../../../core/http/page';
+import { Page, PageTotalPipe } from '../../../core/http/page';
 import { PRESCRIPTION_STATUS_LABELS, Prescription } from '../data/prescription.model';
 import { PrescriptionService } from '../data/prescription.service';
 
 /** Lista de prescrições; para o farmacêutico, por omissão as que estão por dispensar. */
 @Component({
   selector: 'app-prescription-list',
-  imports: [FormsModule, RouterLink, DatePipe],
+  imports: [FormsModule, RouterLink, DatePipe, PageTotalPipe],
   template: `
     <section class="page">
       <header class="page-header">
@@ -95,7 +95,7 @@ import { PrescriptionService } from '../data/prescription.service';
                 </tbody>
               </table>
             </div>
-            <p class="muted total">{{ page.totalElements }} prescrição(ões).</p>
+            <p class="muted total">{{ page | pageTotal }} prescrição(ões).</p>
           }
         } @else {
           <p class="empty" role="status">A carregar…</p>
