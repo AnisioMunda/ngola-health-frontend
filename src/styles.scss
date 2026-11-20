@@ -28,6 +28,27 @@
   --space-3: 0.75rem;
   --space-4: 1rem;
   --space-5: 1.5rem;
+
+  /* Cartões: um só estilo para toda a aplicação (.card e componentes de cartão). */
+  --card-bg: #ffffff;
+  --card-border: #e5eceb;
+  --card-border-hover: #c9dfd9;
+  --card-radius: 0.85rem;
+  --card-padding: 1rem 1.1rem;
+  --card-shadow: 0 3px 12px rgba(23, 43, 53, 0.035);
+  --card-shadow-hover: 0 8px 20px rgba(23, 43, 53, 0.07);
+  --card-title: #20343c;
+  --card-text: #1c3038;
+  --card-muted: #74828a;
+  --card-subtle: #97a2a5;
+  --card-accent: #0e8979;
+
+  /* Tabelas: um só estilo (.table) para toda a aplicação. */
+  --table-head-bg: #f6f9f8;
+  --table-head-text: #74828a;
+  --table-text: #2b3f47;
+  --table-border: #eef3f2;
+  --table-row-hover: #f8fbfa;
 }
 
 *,
@@ -100,10 +121,36 @@ code {
 }
 
 .card {
-  padding: var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  padding: var(--card-padding);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+}
+
+/* Cartão clicável ou com destaque ao passar o rato. */
+.card--interactive {
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+
+  &:hover {
+    border-color: var(--card-border-hover);
+    box-shadow: var(--card-shadow-hover);
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--card-accent);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card--interactive:hover {
+    transform: none;
+  }
 }
 
 /* Botões */
@@ -250,31 +297,111 @@ code {
   overflow-x: auto;
 }
 
+/* Tabela longa: altura limitada, com o cabeçalho sempre visível. */
+.table-scroll--fixed {
+  max-height: 26rem;
+  overflow-y: auto;
+}
+
 .table {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9375rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--table-text);
+  font-size: 0.85rem;
 
   th,
   td {
-    padding: var(--space-3) var(--space-4);
+    padding: 0.75rem 1rem;
     text-align: left;
-    vertical-align: top;
-    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+    border-bottom: 1px solid var(--table-border);
   }
 
   th {
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--color-muted);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding-block: 0.7rem;
+    color: var(--table-head-text);
+    background: var(--table-head-bg);
+    border-bottom-color: var(--card-border);
+    font-size: 0.68rem;
+    font-weight: 750;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
-    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  tbody tr td {
+    transition: background 120ms ease;
+  }
+
+  tbody tr:hover td {
+    background: var(--table-row-hover);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  /* Linha de totais (tfoot ou tr.total). */
+  tfoot td,
+  tr.total td {
+    color: var(--card-text);
+    background: var(--table-head-bg);
+    border-top: 1px solid var(--card-border);
+    border-bottom: 0;
+    font-weight: 700;
+  }
+
+  /* Números centrados, com algarismos de largura fixa. */
+  .num {
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 
   .subtext {
     display: block;
-    font-size: 0.8125rem;
-    color: var(--color-muted);
+    margin-top: 0.1rem;
+    color: var(--card-muted);
+    font-size: 0.76rem;
+  }
+}
+
+/* Variante compacta (tabelas dentro de cartões pequenos, ex.: vista em tabela dos gráficos). */
+.table--compact {
+  font-size: 0.8rem;
+
+  th,
+  td {
+    padding: 0.55rem 0.85rem;
+  }
+}
+
+/* Percentagem com mini-barra (ex.: ocupação). */
+.cell-meter {
+  display: inline-flex;
+  min-width: 4.5rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+
+  > span {
+    display: block;
+    width: 100%;
+    height: 0.25rem;
+    overflow: hidden;
+    background: #e6eeec;
+    border-radius: 99px;
+  }
+
+  i {
+    display: block;
+    height: 100%;
+    background: var(--card-accent);
+    border-radius: inherit;
   }
 }
 
@@ -291,8 +418,44 @@ code {
   }
 }
 
+/* Cartão de tabela: sem margem interior; cabeçalho e rodapé opcionais. */
 .table-card {
   padding: 0;
+  overflow: hidden;
+}
+
+.table-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 1rem 1.1rem 0.9rem;
+  border-bottom: 1px solid var(--table-border);
+
+  h2 {
+    margin: 0;
+    color: var(--card-title);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+
+  p {
+    margin: 0.2rem 0 0;
+    color: var(--card-muted);
+    font-size: 0.76rem;
+  }
+}
+
+.table-card__footer {
+  margin: 0;
+  padding: 0.75rem 1.1rem;
+  color: var(--card-muted);
+  background: #fbfcfc;
+  border-top: 1px solid var(--table-border);
+  font-size: 0.75rem;
+  line-height: 1.5;
 }
 
 .empty {
@@ -305,11 +468,14 @@ tr.inactive td:not(.actions) {
   color: var(--color-muted);
 }
 
+/* Acções: continua a ser uma célula de tabela (as linhas vão até ao fim); botões à direita. */
 td.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-2);
+  text-align: right;
   white-space: nowrap;
+
+  > * + * {
+    margin-left: var(--space-2);
+  }
 }
 
 .pagination {

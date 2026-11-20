@@ -1,151 +1,256 @@
-<section class="page">
-  <header class="page-header">
-    <div>
+<section class="page dashboard-page">
+  <header class="dashboard-header">
+    <div class="dashboard-heading">
+      <span class="eyebrow">Visão geral</span>
       <h1>Dashboard</h1>
-      <p class="muted">Indicadores do hospital no período escolhido.</p>
+      <p>Acompanhe os principais indicadores do hospital.</p>
     </div>
-    <div class="header-actions">
-      <a class="btn btn-secondary" routerLink="/reports">Relatórios</a>
-    </div>
+    <a class="reports-link" routerLink="/reports">
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M4 2h8l4 4v12H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Z" />
+        <path d="M12 2v4h4M7 10h6M7 13h6M7 16h3" />
+      </svg>
+      <span>Ver relatórios</span>
+      <svg class="reports-link__arrow" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M4 10h12m-5-5 5 5-5 5" />
+      </svg>
+    </a>
   </header>
 
-  <app-period-picker [(period)]="period" />
+  <div class="period-control">
+    <div class="period-control__label">
+      <span class="period-control__icon" aria-hidden="true">
+        <svg viewBox="0 0 20 20" fill="none">
+          <rect x="2.5" y="4" width="15" height="13" rx="2" />
+          <path d="M6.5 2.5v3M13.5 2.5v3M2.5 8h15" />
+        </svg>
+      </span>
+      <span class="period-control__text">
+        <span class="period-control__title">Período de análise</span>
+        <span class="period-control__summary" aria-live="polite">
+          {{ period().from | date: 'd MMM' }} – {{ period().to | date: 'd MMM y' }} ·
+          {{ periodLength() }} {{ periodLength() === 1 ? 'dia' : 'dias' }}
+        </span>
+      </span>
+    </div>
+    <app-period-picker [(period)]="period" />
+  </div>
 
   @if (error(); as e) {
-    <div class="alert alert-error" role="alert">{{ e }}</div>
+    <div class="dashboard-error" role="alert">
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <circle cx="10" cy="10" r="7.5" />
+        <path d="M10 6v5m0 3h.01" />
+      </svg>
+      <span>{{ e }}</span>
+    </div>
   }
 
   @if (data(); as d) {
-    <div [class.refreshing]="loading()" [attr.aria-busy]="loading()">
-      <h2 class="section">Atendimento</h2>
-      <div class="tiles">
-        <div class="tile card">
-          <span class="tile-label">Episódios</span>
-          <span class="tile-value">{{ d.episodes.total | number }}</span>
-          <span class="tile-sub">{{ d.episodes.completed | number }} concluídos</span>
+    <div class="dashboard-content" [class.refreshing]="loading()" [attr.aria-busy]="loading()">
+      <section class="dashboard-section" aria-labelledby="care-heading">
+        <div class="section-heading">
+          <div>
+            <span class="section-heading__eyebrow">Actividade clínica</span>
+            <h2 id="care-heading">Atendimento</h2>
+          </div>
+          <span class="section-heading__period">Indicadores do período</span>
         </div>
-        <div class="tile card">
-          <span class="tile-label">Doentes novos</span>
-          <span class="tile-value">{{ d.patients.newInPeriod | number }}</span>
-          <span class="tile-sub">{{ d.patients.active | number }} activos no total</span>
-        </div>
-        <div class="tile card">
-          <span class="tile-label">Triagem no tempo-alvo</span>
-          <span class="tile-value">{{
-            d.triage.withinTargetPercent !== null
-              ? (d.triage.withinTargetPercent | number: '1.0-1') + '%'
-              : '—'
-          }}</span>
-          <span class="tile-sub"
-            >{{ d.triage.total | number }} triados · espera média
-            {{ d.triage.avgWaitMinutes ?? '—' }} min</span
-          >
-        </div>
-        <div class="tile card">
-          <span class="tile-label">Consultas marcadas</span>
-          <span class="tile-value">{{ d.appointments.total | number }}</span>
-          <span class="tile-sub"
-            >faltas
-            {{
-              d.appointments.noShowPercent !== null ? d.appointments.noShowPercent + '%' : '—'
-            }}</span
-          >
-        </div>
-      </div>
 
-      <div class="charts">
-        <div class="card">
+        <div class="tiles">
+          <app-stat-card
+            label="Episódios"
+            tone="teal"
+            [value]="(d.episodes.total | number) ?? '0'"
+            [meta]="[(d.episodes.completed | number) + ' concluídos']"
+          >
+            <svg icon viewBox="0 0 24 24">
+              <rect x="4" y="3" width="16" height="18" rx="2" />
+              <path d="M8 8h8M8 12h8M8 16h5" />
+            </svg>
+          </app-stat-card>
+          <app-stat-card
+            label="Doentes novos"
+            tone="blue"
+            [value]="(d.patients.newInPeriod | number) ?? '0'"
+            [meta]="[(d.patients.active | number) + ' activos no total']"
+          >
+            <svg icon viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
+              <path d="M19 4v4m-2-2h4" />
+            </svg>
+          </app-stat-card>
+          <app-stat-card
+            label="Triagem no tempo-alvo"
+            tone="amber"
+            [value]="percent(d.triage.withinTargetPercent)"
+            [progress]="d.triage.withinTargetPercent"
+            [meta]="[
+              (d.triage.total | number) + ' triados',
+              'espera média ' + decimal(d.triage.avgWaitMinutes) + ' min',
+            ]"
+          >
+            <svg icon viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
+              <path d="M8 2 6 4m10-2 2 2" />
+            </svg>
+          </app-stat-card>
+          <app-stat-card
+            label="Consultas marcadas"
+            tone="violet"
+            [value]="(d.appointments.total | number) ?? '0'"
+            [meta]="[
+              (d.appointments.checkedIn | number) + ' compareceram',
+              'faltas ' + percent(d.appointments.noShowPercent),
+            ]"
+          >
+            <svg icon viewBox="0 0 24 24">
+              <rect x="3" y="5" width="18" height="16" rx="2" />
+              <path d="M16 3v4M8 3v4M3 10h18m-12 5h6" />
+            </svg>
+          </app-stat-card>
+        </div>
+
+        <article class="chart-card card chart-card--trend">
           <app-column-chart
             title="Episódios por dia"
+            subtitle="Total diário de episódios no período"
             valueLabel="Episódios"
             [points]="episodesDaily()"
           />
-        </div>
-        <div class="card">
-          <app-bar-list
-            title="Episódios por tipo"
-            categoryLabel="Tipo"
-            valueLabel="Episódios"
-            [items]="episodesByType()"
-          />
-        </div>
-        <div class="card">
-          <app-bar-list
-            title="Triagem por prioridade"
-            categoryLabel="Prioridade"
-            valueLabel="Doentes"
-            [items]="triageByPriority()"
-          />
-        </div>
-        <div class="card">
-          <app-bar-list
-            title="Espera média até à chamada (min)"
-            categoryLabel="Prioridade"
-            valueLabel="Minutos"
-            valueFormat="decimal"
-            [items]="waitByPriority()"
-          />
-        </div>
-      </div>
+        </article>
 
-      <h2 class="section">Internamento e laboratório</h2>
-      <div class="tiles">
-        <div class="tile card">
-          <span class="tile-label">Ocupação hoje</span>
-          <span class="tile-value">{{
-            d.inpatient.occupancyPercent !== null
-              ? (d.inpatient.occupancyPercent | number: '1.0-1') + '%'
-              : '—'
-          }}</span>
-          <span class="tile-sub"
-            >{{ d.inpatient.occupiedBeds }} de {{ d.inpatient.activeBeds }} camas</span
-          >
+        <div class="charts">
+          <article class="chart-card card">
+            <app-bar-list
+              title="Episódios por tipo"
+              subtitle="Distribuição por tipo de atendimento"
+              categoryLabel="Tipo"
+              valueLabel="Episódios"
+              [items]="episodesByType()"
+            />
+          </article>
+          <article class="chart-card card">
+            <app-bar-list
+              title="Triagem por prioridade"
+              subtitle="Doentes triados por cor de Manchester"
+              categoryLabel="Prioridade"
+              valueLabel="Doentes"
+              [items]="triageByPriority()"
+            />
+          </article>
+          <article class="chart-card card">
+            <app-bar-list
+              title="Espera até à chamada"
+              subtitle="Minutos, em média, da triagem à chamada"
+              categoryLabel="Prioridade"
+              valueLabel="Minutos"
+              valueFormat="decimal"
+              [items]="waitByPriority()"
+            />
+          </article>
         </div>
-        <div class="tile card">
-          <span class="tile-label">Internamentos / altas</span>
-          <span class="tile-value"
-            >{{ d.inpatient.admissions | number }} / {{ d.inpatient.discharges | number }}</span
-          >
-          <span class="tile-sub"
-            >demora média {{ d.inpatient.avgLengthOfStayDays ?? '—' }} dias ·
-            {{ d.inpatient.deaths }} óbito(s)</span
-          >
-        </div>
-        <div class="tile card">
-          <span class="tile-label">Pedidos de exames</span>
-          <span class="tile-value">{{ d.lab.requests | number }}</span>
-          <span class="tile-sub"
-            >{{ d.lab.completed | number }} concluídos · {{ d.lab.abnormalPercent ?? '—' }}%
-            alterados</span
-          >
-        </div>
-        <div class="tile card">
-          <span class="tile-label">Tempo de resposta do laboratório</span>
-          <span class="tile-value">{{
-            d.lab.avgTurnaroundHours !== null ? d.lab.avgTurnaroundHours + ' h' : '—'
-          }}</span>
-          <span class="tile-sub"
-            >urgentes
-            {{
-              d.lab.urgentAvgTurnaroundHours !== null ? d.lab.urgentAvgTurnaroundHours + ' h' : '—'
-            }}</span
-          >
-        </div>
-      </div>
+      </section>
 
-      <h2 class="section">Farmácia</h2>
-      <div class="tiles">
-        <a class="tile card link" routerLink="/pharmacy/alerts">
-          <span class="tile-label">Farmácia (hoje)</span>
-          <span class="tile-value">{{ d.pharmacy.lowStock }}</span>
-          <span class="tile-sub"
-            >abaixo do mínimo · {{ d.pharmacy.expiringIn30Days }} lotes a expirar ·
-            {{ d.pharmacy.expiredWithBalance }} expirados</span
+      <section class="dashboard-section" aria-labelledby="operations-heading">
+        <div class="section-heading">
+          <div>
+            <span class="section-heading__eyebrow">Capacidade e diagnóstico</span>
+            <h2 id="operations-heading">Internamento e laboratório</h2>
+          </div>
+        </div>
+
+        <div class="tiles">
+          <app-stat-card
+            label="Ocupação de camas hoje"
+            tone="blue"
+            [value]="percent(d.inpatient.occupancyPercent)"
+            [progress]="d.inpatient.occupancyPercent"
+            [meta]="[
+              d.inpatient.occupiedBeds + ' de ' + d.inpatient.activeBeds + ' camas ocupadas',
+            ]"
           >
+            <svg icon viewBox="0 0 24 24">
+              <path d="M3 18V8h18v10M3 13h18M5 8V5h6v3m2 0V5h6v3M5 18v2m14-2v2" />
+            </svg>
+          </app-stat-card>
+          <app-stat-card
+            label="Internamentos e altas"
+            tone="teal"
+            [value]="(d.inpatient.admissions | number) ?? '0'"
+            [valueNote]="'/ ' + (d.inpatient.discharges | number) + ' altas'"
+            [meta]="[
+              'demora média ' + decimal(d.inpatient.avgLengthOfStayDays) + ' dias',
+              d.inpatient.deaths + ' óbito(s)',
+            ]"
+          >
+            <svg icon viewBox="0 0 24 24">
+              <path d="M4 20V8h16v12M2 20h20M7 8V5h10v3m-8 5h6m-3-3v6" />
+            </svg>
+          </app-stat-card>
+          <app-stat-card
+            label="Pedidos de exames"
+            tone="violet"
+            [value]="(d.lab.requests | number) ?? '0'"
+            [meta]="[
+              (d.lab.completed | number) + ' concluídos',
+              percent(d.lab.abnormalPercent) + ' alterados',
+            ]"
+          >
+            <svg icon viewBox="0 0 24 24">
+              <path d="M9 3h6m-5 0v5l-4 9a2 2 0 0 0 2 3h8a2 2 0 0 0 2-3l-4-9V3m-5 11h8" />
+              <path d="m10 17 2 2 4-5" />
+            </svg>
+          </app-stat-card>
+          <app-stat-card
+            label="Tempo de resposta do laboratório"
+            tone="amber"
+            [value]="hours(d.lab.avgTurnaroundHours)"
+            [meta]="['urgentes ' + hours(d.lab.urgentAvgTurnaroundHours)]"
+          >
+            <svg icon viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+          </app-stat-card>
+        </div>
+      </section>
+
+      <section class="dashboard-section" aria-labelledby="pharmacy-heading">
+        <div class="section-heading">
+          <div>
+            <span class="section-heading__eyebrow">Stock e validade</span>
+            <h2 id="pharmacy-heading">Farmácia</h2>
+          </div>
+        </div>
+        <a class="pharmacy-alert" routerLink="/pharmacy/alerts">
+          <span class="pharmacy-alert__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 7h16v13H4zM8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-4 4v5m-2.5-2.5h5" />
+            </svg>
+          </span>
+          <span class="pharmacy-alert__content">
+            <strong>Alertas de stock e validade</strong>
+            <span>
+              <b>{{ d.pharmacy.lowStock }}</b> abaixo do mínimo
+              <i aria-hidden="true"></i>
+              <b>{{ d.pharmacy.expiringIn30Days }}</b> lotes a expirar
+              <i aria-hidden="true"></i>
+              <b>{{ d.pharmacy.expiredWithBalance }}</b> expirados
+            </span>
+          </span>
+          <svg class="pharmacy-alert__arrow" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M4 10h12m-5-5 5 5-5 5" />
+          </svg>
         </a>
-      </div>
+      </section>
     </div>
   } @else if (!error()) {
-    <p class="empty" role="status">A calcular indicadores…</p>
+    <div class="dashboard-loading" role="status">
+      <span class="dashboard-loading__spinner" aria-hidden="true"></span>
+      <span>A calcular indicadores...</span>
+    </div>
   }
 </section>

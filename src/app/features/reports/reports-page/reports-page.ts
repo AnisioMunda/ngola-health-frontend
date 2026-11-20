@@ -1,4 +1,4 @@
-import { DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -18,22 +18,19 @@ import { PeriodPicker, lastDays } from '../period-picker';
 /** Relatório de ocupação por enfermaria (direcção), com CSV. */
 @Component({
   selector: 'app-reports-page',
-  imports: [DecimalPipe, PeriodPicker, BarList],
+  imports: [DatePipe, DecimalPipe, PeriodPicker, BarList],
   templateUrl: './reports-page.html',
   styles: `
     .card {
       margin-bottom: var(--space-4);
     }
-    .num {
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-    }
-    tr.total td {
-      font-weight: 700;
+    .ward {
+      color: var(--card-text);
+      font-weight: 600;
     }
     .refreshing {
       opacity: 0.6;
+      transition: opacity 0.2s;
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

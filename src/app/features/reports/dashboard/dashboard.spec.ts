@@ -69,13 +69,16 @@ describe('Dashboard', () => {
     const period = service.dashboard.mock.calls[0][0];
     const days = (new Date(period.to).getTime() - new Date(period.from).getTime()) / 86_400_000 + 1;
     expect(days).toBe(30);
-    const tiles = [...el.querySelectorAll('.tile')].map((t) =>
+    const cards = [...el.querySelectorAll('app-stat-card')].map((t) =>
       t.textContent?.replace(/\s+/g, ' ').trim(),
     );
-    expect(tiles.some((t) => t?.includes('Triagem no tempo-alvo') && t.includes('88,9%'))).toBe(
-      true,
-    );
-    expect(tiles.some((t) => t?.includes('Ocupação hoje') && t.includes('75%'))).toBe(true);
+    expect(cards.length).toBe(8);
+    const card = (label: string) => cards.find((t) => t?.includes(label)) ?? '';
+    expect(card('Triagem no tempo-alvo')).toContain('88,9%');
+    expect(card('Triagem no tempo-alvo')).toContain('espera média 12,5 min');
+    expect(card('Ocupação de camas hoje')).toContain('75%');
+    expect(card('Internamentos e altas')).toContain('/ 8 altas');
+    expect(card('Tempo de resposta do laboratório')).toContain('5,5 h');
     expect(el.textContent).toContain('Amarelo (urgente)');
   });
 });

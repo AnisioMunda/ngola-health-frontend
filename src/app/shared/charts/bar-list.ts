@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 
+import { ChartViewToggle } from './chart-view-toggle';
 import { ValueFormat, formatValue } from './chart-format';
 
 export interface BarItem {
@@ -10,39 +11,58 @@ export interface BarItem {
 }
 
 /**
- * Barras horizontais de uma só série (comparar categorias). O valor fica na ponta, em texto
- * normal; a identidade vem sempre do rótulo escrito, nunca só da cor. Inclui a vista em tabela.
+ * Barras horizontais de uma só série (comparar categorias). Rótulo e valor ficam escritos por
+ * cima da barra; a identidade vem sempre do texto, nunca só da cor. Alterna com a vista em tabela.
  */
 @Component({
   selector: 'app-bar-list',
+  imports: [ChartViewToggle],
   template: `
-    <figure class="bar-list" [attr.aria-label]="title()">
-      <figcaption class="chart-title">{{ title() }}</figcaption>
+    <figure class="chart" [attr.aria-label]="title()">
+      <header class="chart-header">
+        <div class="chart-heading">
+          <figcaption class="chart-title">{{ title() }}</figcaption>
+          @if (subtitle()) {
+            <p class="chart-subtitle">{{ subtitle() }}</p>
+          }
+        </div>
+        @if (items().length > 0) {
+          <app-chart-view-toggle [(view)]="view" />
+        }
+      </header>
+
       @if (items().length === 0) {
-        <p class="muted">Sem dados no período.</p>
+        <p class="chart-empty">Sem dados no período.</p>
       } @else {
-        <ul>
+        <ul class="bars" [hidden]="view() === 'table'">
           @for (item of items(); track item.label) {
             <li
               tabindex="0"
               [attr.aria-label]="item.label + ': ' + format(item.value)"
               [title]="item.label + ': ' + format(item.value)"
             >
-              <span class="label">{{ item.label }}</span>
+              <span class="bar-row">
+                <span class="label">{{ item.label }}</span>
+                <span class="value">{{ format(item.value) }}</span>
+              </span>
               <span class="track">
                 <span
                   class="bar"
                   [style.width.%]="width(item.value)"
                   [style.background]="item.color ?? 'var(--chart-series-1)'"
                 ></span>
-                <span class="value">{{ format(item.value) }}</span>
               </span>
             </li>
           }
         </ul>
-        <details class="table-view">
-          <summary>Ver tabela</summary>
-          <table class="table">
+
+        <div class="table-view" [hidden]="view() === 'chart'">
+          <table class="table table--compact">
+            <caption class="visually-hidden">
+              {{
+                title()
+              }}
+            </caption>
             <thead>
               <tr>
                 <th scope="col">{{ categoryLabel() }}</th>
@@ -52,13 +72,20 @@ export interface BarItem {
             <tbody>
               @for (item of items(); track item.label) {
                 <tr>
-                  <td>{{ item.label }}</td>
+                  <td>
+                    <span class="cell-label">
+                      @if (item.color) {
+                        <span class="dot" [style.background]="item.color" aria-hidden="true"></span>
+                      }
+                      {{ item.label }}
+                    </span>
+                  </td>
                   <td class="num">{{ format(item.value) }}</td>
                 </tr>
               }
             </tbody>
           </table>
-        </details>
+        </div>
       }
     </figure>
   `,
@@ -67,10 +94,13 @@ export interface BarItem {
 })
 export class BarList {
   readonly title = input.required<string>();
+  readonly subtitle = input<string>();
   readonly items = input.required<BarItem[]>();
   readonly valueFormat = input<ValueFormat>('integer');
   readonly categoryLabel = input('Categoria');
   readonly valueLabel = input('Valor');
+
+  protected readonly view = signal<'chart' | 'table'>('chart');
 
   private readonly max = computed(() => Math.max(0, ...this.items().map((i) => i.value)));
 

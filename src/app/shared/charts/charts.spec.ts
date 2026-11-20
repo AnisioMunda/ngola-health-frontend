@@ -67,7 +67,7 @@ describe('ColumnChart', () => {
     // Dias a zero não desenham coluna, mas mantêm a zona de toque.
     expect(el.querySelectorAll('path.col').length).toBe(2);
     expect(el.querySelectorAll('rect.hit').length).toBe(3);
-    const svg = el.querySelector('svg')!;
+    const svg = el.querySelector<SVGElement>('svg[role="img"]')!;
     svg.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
     fixture.detectChanges();
     expect(el.querySelector('.tooltip strong')?.textContent).toBe('5');
@@ -75,5 +75,27 @@ describe('ColumnChart', () => {
     fixture.detectChanges();
     expect(el.querySelector('.tooltip strong')?.textContent).toBe('0');
     expect(el.querySelectorAll('.table-view tbody tr').length).toBe(3);
+  });
+
+  it('alterna entre o gráfico e a tabela', () => {
+    TestBed.configureTestingModule({ imports: [ColumnChart] });
+    const fixture = TestBed.createComponent(ColumnChart);
+    fixture.componentRef.setInput('title', 'Episódios por dia');
+    fixture.componentRef.setInput('points', [{ date: '2026-11-18', value: 5 }]);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    const plot = el.querySelector<HTMLElement>('.plot')!;
+    const table = el.querySelector<HTMLElement>('.table-view')!;
+    expect(plot.hidden).toBe(false);
+    expect(table.hidden).toBe(true);
+
+    const tableButton = [...el.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('Tabela'),
+    )!;
+    tableButton.click();
+    fixture.detectChanges();
+    expect(tableButton.getAttribute('aria-pressed')).toBe('true');
+    expect(plot.hidden).toBe(true);
+    expect(table.hidden).toBe(false);
   });
 });
