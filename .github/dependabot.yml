@@ -1,0 +1,33 @@
+# Actualizações semanais. O Angular vem num só PR (os pacotes têm de subir juntos); o resto das
+# versões menores e correcções noutro; versões maiores à parte, para rever com calma.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Africa/Luanda
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      angular:
+        patterns: ['@angular/*', '@angular-devkit/*']
+      npm-minor-patch:
+        update-types: [minor, patch]
+        exclude-patterns: ['@angular/*', '@angular-devkit/*']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Africa/Luanda
+    commit-message:
+      prefix: chore(ci)
+    groups:
+      actions:
+        patterns: ['*']

@@ -1,0 +1,92 @@
+# Verificação de segurança semanal (OWASP ZAP) contra uma cópia isolada da aplicação: o mesmo
+# ambiente dos testes E2E (base MySQL descartável com dados de demonstração).
+#  - baseline: análise passiva do frontend (cabeçalhos, cookies, conteúdo);
+#  - API: análise activa da API a partir do OpenAPI.
+# Os alertas ficam no relatório (artefacto); não bloqueiam o build. Reveja-os todas as semanas.
+name: Segurança (ZAP)
+
+on:
+  schedule:
+    - cron: '0 4 * * 1' # segundas, 05:00 em Luanda
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  zap:
+    name: ZAP baseline e API
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      mysql:
+        image: mysql:9
+        env:
+          MYSQL_ROOT_PASSWORD: ci-root-password
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pci-root-password --silent"
+          --health-interval=5s --health-timeout=5s --health-retries=30
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ci-root-password
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: frontend
+      - uses: actions/checkout@v5
+        with:
+          repository: ${{ github.repository_owner }}/ngola-health-backend
+          ref: main
+          path: backend
+          token: ${{ secrets.BACKEND_REPO_TOKEN || github.token }}
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Segredo JWT efémero
+        run: |
+          secret="$(openssl rand -base64 32)"
+          echo "::add-mask::$secret"
+          echo "JWT_SECRET=$secret" >> "$GITHUB_ENV"
+
+      - name: Arrancar backend e frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          nohup bash e2e/start-backend.sh > ../backend.log 2>&1 &
+          nohup npx ng serve --port 4300 --proxy-config e2e/proxy.e2e.json > ../frontend.log 2>&1 &
+          for i in $(seq 1 150); do
+            curl -sf http://localhost:8081/api/actuator/health/readiness >/dev/null &&
+              curl -sf http://localhost:4300 >/dev/null && exit 0
+            sleep 2
+          done
+          tail -50 ../backend.log ../frontend.log
+          exit 1
+
+      - name: ZAP baseline (frontend)
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: http://localhost:4300
+          allow_issue_writing: false
+          fail_action: false
+          artifact_name: zap-baseline
+
+      - name: ZAP API (backend)
+        uses: zaproxy/action-api-scan@v0.9.0
+        with:
+          target: http://localhost:8081/api/v3/api-docs
+          format: openapi
+          allow_issue_writing: false
+          fail_action: false
+          artifact_name: zap-api
