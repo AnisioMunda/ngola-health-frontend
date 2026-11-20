@@ -1,56 +1,211 @@
-<main class="auth-page">
-  <section class="card auth-card">
-    <h1>Ngola Health</h1>
-    <p class="muted">Inicie sessão para continuar.</p>
-
-    @if (reason() === 'expired') {
-      <div class="alert alert-info" role="status">
-        A sua sessão expirou. Inicie sessão novamente.
-      </div>
-    }
-    @if (error(); as message) {
-      <div class="alert alert-error" role="alert">{{ message }}</div>
-    }
-
-    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-      <label class="field">
-        <span>Utilizador ou correio electrónico</span>
-        <input formControlName="login" autocomplete="username" autocapitalize="none" autofocus />
-        @if (form.controls.login.invalid && form.controls.login.touched) {
-          <small class="field-error">Indique o utilizador.</small>
-        }
-      </label>
-      <label class="field">
-        <span>Senha</span>
-        <span class="password-row">
-          <input
-            formControlName="password"
-            [type]="showPassword() ? 'text' : 'password'"
-            autocomplete="current-password"
-          />
-          <button
-            class="btn btn-small btn-secondary"
-            type="button"
-            [attr.aria-pressed]="showPassword()"
-            (click)="showPassword.set(!showPassword())"
-          >
-            {{ showPassword() ? 'Ocultar' : 'Mostrar' }}
-          </button>
+<div class="login-layout">
+  <aside class="brand-panel">
+    <div class="brand-panel__content">
+      <a class="brand" routerLink="/login" aria-label="Ngola Health — início de sessão">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none">
+            <path
+              d="M20 9v22M9 20h22"
+              stroke="currentColor"
+              stroke-width="4"
+              stroke-linecap="round"
+            />
+          </svg>
         </span>
-        @if (form.controls.password.invalid && form.controls.password.touched) {
-          <small class="field-error">Indique a senha.</small>
-        }
-      </label>
-      <button class="btn btn-primary full" type="submit" [disabled]="submitting()">
-        {{ submitting() ? 'A entrar…' : 'Entrar' }}
-      </button>
-    </form>
-    <p class="muted portal-link">
-      Doente com código do hospital? <a routerLink="/portal/activate">Activar a minha conta</a>
-    </p>
+        <span>Ngola <strong>Health</strong></span>
+      </a>
 
-    @if (backendStatus() === 'DOWN') {
-      <p class="alert alert-error small" role="status">O servidor está indisponível de momento.</p>
-    }
-  </section>
-</main>
+      <div class="brand-panel__message">
+        <span class="eyebrow">Gestão hospitalar integrada</span>
+        <h1>Mais clareza<br />em cada cuidado.</h1>
+        <p>
+          Uma plataforma para aproximar equipas, organizar processos e acompanhar o percurso clínico
+          com confiança.
+        </p>
+      </div>
+
+      <div class="feature-list" aria-label="Funcionalidades da plataforma">
+        <div class="feature">
+          <span class="feature__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 21s7-3.5 7-9V5l-7-3-7 3v7c0 5.5 7 9 7 9Z" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+          </span>
+          <span
+            ><strong>Informação protegida</strong
+            ><small>Acesso seguro à sua plataforma</small></span
+          >
+        </div>
+        <div class="feature">
+          <span class="feature__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 19V5m0 14h16" />
+              <path d="m7 15 4-4 3 2 5-6" />
+            </svg>
+          </span>
+          <span
+            ><strong>Processos organizados</strong
+            ><small>Equipas alinhadas num só lugar</small></span
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="brand-panel__decoration brand-panel__decoration--one" aria-hidden="true"></div>
+    <div class="brand-panel__decoration brand-panel__decoration--two" aria-hidden="true"></div>
+    <p class="brand-panel__footer">Ngola Health <span>·</span> Angola</p>
+  </aside>
+
+  <main class="login-main">
+    <section class="login-card" aria-labelledby="login-title">
+      <a
+        class="brand brand--mobile"
+        routerLink="/login"
+        aria-label="Ngola Health — início de sessão"
+      >
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none">
+            <path
+              d="M20 9v22M9 20h22"
+              stroke="currentColor"
+              stroke-width="4"
+              stroke-linecap="round"
+            />
+          </svg>
+        </span>
+        <span>Ngola <strong>Health</strong></span>
+      </a>
+
+      <header class="login-heading">
+        <span class="eyebrow">Bem-vindo de volta</span>
+        <h2 id="login-title">Inicie sessão</h2>
+        <p>Introduza as suas credenciais para aceder à plataforma.</p>
+      </header>
+
+      @if (reason() === 'expired') {
+        <div class="notice notice--info" role="status">
+          <span class="notice__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="7.5" />
+              <path d="M10 9v4m0-7h.01" />
+            </svg>
+          </span>
+          <span>A sua sessão expirou. Inicie sessão novamente.</span>
+        </div>
+      }
+
+      @if (error(); as message) {
+        <div class="notice notice--error" role="alert">
+          <span class="notice__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="7.5" />
+              <path d="m7.5 7.5 5 5m0-5-5 5" />
+            </svg>
+          </span>
+          <span>{{ message }}</span>
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="field">
+          <label for="login">Utilizador ou correio electrónico</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <circle cx="10" cy="6.25" r="3" />
+              <path d="M4 16.5c.6-2.6 2.6-4 6-4s5.4 1.4 6 4" />
+            </svg>
+            <input
+              id="login"
+              type="text"
+              formControlName="login"
+              autocomplete="username"
+              autocapitalize="none"
+              autofocus
+              placeholder="O seu utilizador ou email"
+              [attr.aria-invalid]="form.controls.login.invalid && form.controls.login.touched"
+              [attr.aria-describedby]="
+                form.controls.login.invalid && form.controls.login.touched ? 'login-error' : null
+              "
+            />
+          </div>
+          @if (form.controls.login.invalid && form.controls.login.touched) {
+            <small class="field-error" id="login-error">Indique o utilizador.</small>
+          }
+        </div>
+
+        <div class="field">
+          <label for="password">Senha</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="3.5" y="8.5" width="13" height="9" rx="2" />
+              <path d="M6.5 8.5V6a3.5 3.5 0 0 1 7 0v2.5" />
+              <circle cx="10" cy="12.75" r="1" />
+            </svg>
+            <input
+              id="password"
+              formControlName="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              autocomplete="current-password"
+              placeholder="Introduza a sua senha"
+              [attr.aria-invalid]="form.controls.password.invalid && form.controls.password.touched"
+              [attr.aria-describedby]="
+                form.controls.password.invalid && form.controls.password.touched
+                  ? 'password-error'
+                  : null
+              "
+            />
+            <button
+              class="password-toggle"
+              type="button"
+              [attr.aria-pressed]="showPassword()"
+              [attr.aria-label]="showPassword() ? 'Ocultar senha' : 'Mostrar senha'"
+              (click)="showPassword.set(!showPassword())"
+            >
+              @if (showPassword()) {
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="m3 3 14 14M8.6 8.6a2 2 0 0 0 2.8 2.8" />
+                  <path
+                    d="M6.2 6.4C3.6 7.8 2 10 2 10s2.8 5 8 5a8.6 8.6 0 0 0 3.8-.9M8.3 5.2A8 8 0 0 1 10 5c5.2 0 8 5 8 5a12 12 0 0 1-2.1 2.5"
+                  />
+                </svg>
+              } @else {
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M2 10s2.8-5 8-5 8 5 8 5-2.8 5-8 5-8-5-8-5Z" />
+                  <circle cx="10" cy="10" r="2" />
+                </svg>
+              }
+            </button>
+          </div>
+          @if (form.controls.password.invalid && form.controls.password.touched) {
+            <small class="field-error" id="password-error">Indique a senha.</small>
+          }
+        </div>
+
+        <button class="submit-button" type="submit" [disabled]="submitting()">
+          @if (submitting()) {
+            <span class="spinner" aria-hidden="true"></span>
+            <span>A entrar...</span>
+          } @else {
+            <span>Entrar na plataforma</span>
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M4 10h12m-5-5 5 5-5 5" />
+            </svg>
+          }
+        </button>
+      </form>
+
+      @if (backendStatus() === 'DOWN') {
+        <div class="notice notice--error server-notice" role="status">
+          O servidor está indisponível de momento.
+        </div>
+      }
+
+      <div class="login-footer">
+        <p>Doente com código do hospital?</p>
+        <a routerLink="/portal/activate">Activar a minha conta</a>
+      </div>
+      <p class="copyright">© Ngola Health · Angola</p>
+    </section>
+  </main>
+</div>
