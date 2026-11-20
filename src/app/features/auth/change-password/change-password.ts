@@ -22,6 +22,7 @@ function samePasswords(group: AbstractControl): ValidationErrors | null {
   selector: 'app-change-password',
   imports: [ReactiveFormsModule],
   templateUrl: './change-password.html',
+  styleUrl: './change-password.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChangePassword {
@@ -34,6 +35,7 @@ export class ChangePassword {
   protected readonly mandatory = computed(() => this.auth.user()?.mustChangePassword ?? false);
   protected readonly submitting = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly showPasswords = signal(false);
 
   readonly form = inject(FormBuilder).nonNullable.group(
     {
