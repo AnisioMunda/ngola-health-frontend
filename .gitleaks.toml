@@ -1,8 +1,0 @@
-# Pesquisa de segredos (gitleaks). Usa as regras por omissão; as excepções abaixo são valores
-# de TESTE, que só existem na base descartável dos testes E2E.
-[extend]
-useDefault = true
-
-[[allowlists]]
-description = "Senha dos utilizadores de demonstração da base E2E"
-paths = ['''e2e/.*''', '''src/.*\.spec\.ts''']
