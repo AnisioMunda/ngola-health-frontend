@@ -1,69 +1,48 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
-import { describe, expect, it } from 'vitest';
+import { Router, provideRouter } from '@angular/router';
+import { describe, expect, it, vi } from 'vitest';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { Role } from '../../core/auth/roles';
-import { Shell } from '../../layout/shell/shell';
 import { Home } from './home';
 
-function setup(roles: Role[]) {
+function render(roles: Role[]) {
   TestBed.configureTestingModule({
-    imports: [Home, Shell],
+    imports: [Home],
     providers: [
       provideRouter([]),
       {
         provide: AuthService,
         useValue: {
           user: () => ({ fullName: 'Dr. Rui', roles, hospitalName: 'HCL' }),
-          hasAnyRole: (allowed: readonly Role[]) => roles.some((r) => allowed.includes(r)),
-          logout: () => ({ subscribe: () => undefined }),
+          hasAnyRole: (allowed: readonly Role[]) => roles.some((role) => allowed.includes(role)),
         },
       },
     ],
   });
-}
-
-function tiles(): string[] {
+  const navigateByUrl = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
   const fixture = TestBed.createComponent(Home);
   fixture.detectChanges();
-  return [...(fixture.nativeElement as HTMLElement).querySelectorAll('.tile strong')].map((t) =>
-    t.textContent!.trim(),
-  );
-}
-
-function menu(): string[] {
-  const fixture = TestBed.createComponent(Shell);
-  fixture.detectChanges();
-  return [...(fixture.nativeElement as HTMLElement).querySelectorAll('nav a')]
-    .map((a) => a.textContent!.trim())
-    .filter((label) => label !== 'Início');
+  return { fixture, navigateByUrl };
 }
 
 describe('Home', () => {
-  it('o médico vê o cartão de Prescrições', () => {
-    setup(['DOCTOR']);
-    expect(tiles()).toContain('Prescrições');
+  it('encaminha o médico para o primeiro módulo permitido', () => {
+    const { navigateByUrl } = render(['DOCTOR']);
+    expect(navigateByUrl).toHaveBeenCalledWith('/patients', { replaceUrl: true });
   });
 
-  it.each<Role[]>([
-    ['DOCTOR'],
-    ['NURSE'],
-    ['PHARMACIST'],
-    ['RECEPTIONIST'],
-    ['ADMIN'],
-    ['MANAGER'],
-    ['SUPER_ADMIN'],
-    ['LAB_TECHNICIAN'],
-  ])('cartões e menu coincidem para %s', (role) => {
-    setup([role]);
-    expect(tiles()).toEqual(menu());
+  it('encaminha o super administrador para o primeiro módulo permitido', () => {
+    const { navigateByUrl } = render(['SUPER_ADMIN']);
+    expect(navigateByUrl).toHaveBeenCalledWith('/hospitals', { replaceUrl: true });
   });
 
-  it('perfil sem áreas vê a mensagem de espera', () => {
-    setup(['PATIENT']);
-    const fixture = TestBed.createComponent(Home);
-    fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('ficarão disponíveis');
+  it('mostra um estado vazio quando o perfil não tem módulos', () => {
+    const { fixture, navigateByUrl } = render(['PATIENT']);
+    expect(navigateByUrl).not.toHaveBeenCalled();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'Os módulos do seu perfil ainda não estão disponíveis.',
+    );
+    expect((fixture.nativeElement as HTMLElement).querySelector('.tile')).toBeNull();
   });
 });

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
@@ -18,16 +18,19 @@ export class Shell {
   private readonly auth = inject(AuthService);
 
   protected readonly user = this.auth.user;
-  protected readonly nav = computed(() => [
-    { label: 'Início', path: '/home' },
-    ...areasFor((roles) => this.auth.hasAnyRole(roles)),
-  ]);
+  protected readonly collapsed = signal(false);
+  protected readonly nav = computed(() => areasFor((roles) => this.auth.hasAnyRole(roles)));
+  protected readonly userRoles = computed(() => this.user()?.roles ?? []);
   protected readonly roleLabel = computed(
     () =>
       this.user()
         ?.roles.map((r) => ROLE_LABELS[r])
         .join(', ') ?? '',
   );
+
+  toggleSidebar(): void {
+    this.collapsed.update((collapsed) => !collapsed);
+  }
 
   logout(): void {
     this.auth.logout().subscribe();

@@ -42,16 +42,33 @@ function render(roles: Role[], hospitalName: string | null) {
   fixture.detectChanges();
   const el = fixture.nativeElement as HTMLElement;
   return {
-    links: [...el.querySelectorAll('nav a')].map((a) => a.textContent?.trim()),
+    links: [...el.querySelectorAll('.sidebar__nav a')].map((a) => a.textContent?.trim()),
     account: el.querySelector('.who')?.textContent ?? '',
+    roleIcons: [...el.querySelectorAll<SVGElement>('.who__role-icons svg')].map((icon) =>
+      icon.getAttribute('data-role-icon'),
+    ),
+    actionIcons: [...el.querySelectorAll<HTMLElement>('.account__action')].map((action) =>
+      action.firstElementChild?.tagName.toLowerCase(),
+    ),
     bell: el.querySelector('app-notification-bell'),
+    toggle: el.querySelector<HTMLButtonElement>('.sidebar__toggle'),
+    shell: el.querySelector<HTMLElement>('.app-shell'),
+    fixture,
   };
 }
 
 describe('Shell', () => {
+  it('mostra o primeiro módulo acessível sem incluir Início', () => {
+    expect(render(['PHARMACIST'], 'HCL').links).toEqual([
+      'Prescrições',
+      'Farmácia',
+      'Recursos humanos',
+      'Equipamentos',
+    ]);
+  });
+
   it('o farmacêutico vê prescrições e farmácia', () => {
     expect(render(['PHARMACIST'], 'HCL').links).toEqual([
-      'Início',
       'Prescrições',
       'Farmácia',
       'Recursos humanos',
@@ -63,23 +80,36 @@ describe('Shell', () => {
     expect(render(['DOCTOR'], 'HCL').bell).not.toBeNull();
   });
 
+  it.each([
+    ['DOCTOR', 'DOCTOR'],
+    ['NURSE', 'NURSE'],
+    ['PHARMACIST', 'PHARMACIST'],
+    ['LAB_TECHNICIAN', 'LAB_TECHNICIAN'],
+    ['RECEPTIONIST', 'RECEPTIONIST'],
+    ['FINANCIAL', 'FINANCIAL'],
+    ['MANAGER', 'MANAGER'],
+    ['ADMIN', 'ADMIN'],
+    ['SUPER_ADMIN', 'SUPER_ADMIN'],
+  ] as const)('mostra o ícone específico para %s', (role, icon) => {
+    expect(render([role], 'HCL').roleIcons).toEqual([icon]);
+  });
+
+  it('mostra um ícone para cada perfil e ícones nos controlos da conta', () => {
+    const { roleIcons, actionIcons } = render(['DOCTOR', 'MANAGER'], 'HCL');
+    expect(roleIcons).toEqual(['DOCTOR', 'MANAGER']);
+    expect(actionIcons).toEqual(['svg', 'svg']);
+  });
+
   it('o administrador da plataforma vê hospitais e utilizadores', () => {
     const { links, account, bell } = render(['SUPER_ADMIN'], null);
     expect(bell).toBeNull();
-    expect(links).toEqual([
-      'Início',
-      'Hospitais',
-      'Utilizadores',
-      'Auditoria',
-      'Estado do sistema',
-    ]);
+    expect(links).toEqual(['Hospitais', 'Utilizadores', 'Auditoria', 'Estado do sistema']);
     expect(account).toContain('Plataforma');
   });
 
   it('o administrador do hospital não vê hospitais', () => {
     const { links, account } = render(['ADMIN'], 'HCL');
     expect(links).toEqual([
-      'Início',
       'Dashboard',
       'Relatórios',
       'Pacientes',
@@ -100,7 +130,6 @@ describe('Shell', () => {
 
   it('o médico vê o início e as áreas clínicas', () => {
     expect(render(['DOCTOR'], 'HCL').links).toEqual([
-      'Início',
       'Pacientes',
       'Agendamento',
       'Triagem',
@@ -112,5 +141,14 @@ describe('Shell', () => {
       'Recursos humanos',
       'Equipamentos',
     ]);
+  });
+
+  it('permite recolher e expandir o menu lateral', () => {
+    const { toggle, shell, fixture } = render(['DOCTOR'], 'HCL');
+    expect(toggle?.getAttribute('aria-expanded')).toBe('true');
+    toggle?.click();
+    fixture.detectChanges();
+    expect(shell?.classList.contains('app-shell--collapsed')).toBe(true);
+    expect(toggle?.getAttribute('aria-expanded')).toBe('false');
   });
 });
